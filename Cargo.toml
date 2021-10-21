@@ -1,0 +1,16 @@
+[package]
+name = "sponsor-block"
+version = "0.1.0"
+authors = ["Zacchary Dempsey-Plante <zacc@ztdp.ca>"]
+edition = "2021"
+license = "MIT OR APACHE-2.0"
+repository = "https://github.com/zedseven/sponsor-block-rs"
+homepage = "https://github.com/zedseven/sponsor-block-rs"
+description = "A Rust wrapper for the SponsorBlock API."
+
+[dependencies]
+bitflags = "1.3"
+reqwest = "0.11"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
