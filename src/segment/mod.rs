@@ -20,7 +20,7 @@ pub struct Segment {
 	/// Whether the segment is locked or not.
 	pub locked: bool,
 	/// How many votes the segment has.
-	pub votes: u32,
+	pub votes: i32,
 	/// The video duration upon submission of the segment. Used to determine if
 	/// the segment is out of date.
 	pub video_duration_upon_submission: f32,
