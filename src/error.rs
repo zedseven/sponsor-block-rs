@@ -77,4 +77,4 @@ pub enum SponsorBlockError {
 /// An HTTP status code number.
 pub type StatusCode = u16;
 
-pub(crate) type Result<T> = std::result::Result<T, SponsorBlockError>;
+pub(crate) type SponsorBlockResult<T> = Result<T, SponsorBlockError>;

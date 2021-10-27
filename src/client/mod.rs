@@ -65,6 +65,7 @@ impl ClientBuilder {
 
 	/// Creates a new instance of the struct, with default values for all
 	/// configuration.
+	#[must_use]
 	pub fn new<S: Into<String>>(user_id: S) -> Self {
 		Self {
 			user_agent: Self::DEFAULT_USER_AGENT.to_owned(),

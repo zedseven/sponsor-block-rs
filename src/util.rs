@@ -5,11 +5,16 @@
 use std::fmt::Write;
 
 use reqwest::Response;
+use serde::{
+	de::{Error, Unexpected},
+	Deserialize,
+	Deserializer,
+};
 
-use crate::error::{Result, SponsorBlockError};
+use crate::error::{SponsorBlockError, SponsorBlockResult};
 
 /// Parses the [`Response`] and categorizes errors depending on their source.
-pub(crate) async fn get_response_text(response: Response) -> Result<String> {
+pub(crate) async fn get_response_text(response: Response) -> SponsorBlockResult<String> {
 	let status = response.status();
 	if status.is_success() {
 		Ok(response.text().await?)
