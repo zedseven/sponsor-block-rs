@@ -1,4 +1,5 @@
 # sponsor-block-rs
+### In active development. This is not ready for use yet - once ready, it'll be on crates.io.
 A Rust wrapper for the [SponsorBlock](https://sponsor.ajay.app/) API, which you
 can find complete documentation for [here](https://wiki.sponsor.ajay.app/w/API_Docs).
 
