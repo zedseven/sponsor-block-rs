@@ -2,14 +2,10 @@
 //! with the process.
 
 // Uses
-use std::fmt::Write;
+use std::{collections::HashMap, fmt::Write, hash::Hash};
 
 use reqwest::Response;
-use serde::{
-	de::{Error, Unexpected},
-	Deserialize,
-	Deserializer,
-};
+use serde::{Deserialize, Deserializer};
 
 use crate::error::{SponsorBlockError, SponsorBlockResult};
 
@@ -54,4 +50,32 @@ pub(crate) fn bytes_to_hex_string(bytes: &[u8]) -> String {
 		write!(result, "{:02x}", byte).expect("unable to write byte to string");
 	}
 	result
+}
+
+/// A custom deserializer that maps a [`HashMap`]'s keys using an arbitrary
+/// function.
+///
+/// Failed conversions are silently dropped. This is so an existing version of
+/// the library can remain functional if new keys are added to the API.
+///
+/// This cannot be used directly with [`serde`] - a wrapper deserializer is
+/// required for each type mapping, specifying the conversion function to use.
+pub(crate) fn map_hashmap_key_from_str<'de, D, T, O, F, E>(
+	deserializer: D,
+	convert_func: F,
+) -> Result<HashMap<T, O>, D::Error>
+where
+	D: Deserializer<'de>,
+	T: Hash + Eq,
+	O: Deserialize<'de>,
+	F: Fn(&str) -> Result<T, E>,
+{
+	let raw: HashMap<&str, O> = HashMap::deserialize(deserializer)?;
+	Ok(raw
+		.into_iter()
+		.flat_map(|e| {
+			let convert_result: Result<(T, O), E> = Ok((convert_func(e.0)?, e.1));
+			convert_result
+		})
+		.collect())
 }

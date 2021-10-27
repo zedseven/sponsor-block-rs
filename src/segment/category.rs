@@ -1,17 +1,22 @@
 //! Additional interface for segment categories.
 
+use std::collections::HashMap;
+
 // Uses
 use bitflags::bitflags;
 
-use crate::api::{
-	ENDCARDS_CREDITS_NAME,
-	HIGHLIGHT_NAME,
-	INTERACTION_REMINDER_NAME,
-	INTERMISSION_INTRO_ANIMATION_NAME,
-	NON_MUSIC_NAME,
-	PREVIEW_RECAP_NAME,
-	SPONSOR_NAME,
-	UNPAID_SELF_PROMOTION_NAME,
+use crate::{
+	api::{
+		ENDCARDS_CREDITS_NAME,
+		HIGHLIGHT_NAME,
+		INTERACTION_REMINDER_NAME,
+		INTERMISSION_INTRO_ANIMATION_NAME,
+		NON_MUSIC_NAME,
+		PREVIEW_RECAP_NAME,
+		SPONSOR_NAME,
+		UNPAID_SELF_PROMOTION_NAME,
+	},
+	ActionableSegmentKind,
 };
 
 bitflags! {

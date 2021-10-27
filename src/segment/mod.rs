@@ -1,5 +1,7 @@
 //! Everything to do with segments.
 
+use enum_kinds::EnumKind;
+
 // Modules
 mod category;
 
@@ -30,7 +32,7 @@ pub struct Segment {
 ///
 /// This is declared for segments upon submission, and basically just recommends
 /// whether to mute or skip the entire section.
-#[derive(Debug)]
+#[derive(Debug, Hash, Eq, PartialEq)]
 pub enum Action {
 	/// Skip the segment.
 	Skip,
@@ -41,7 +43,8 @@ pub enum Action {
 /// A video segment, containing timestamp information.
 ///
 /// For segment types, visit: <https://wiki.sponsor.ajay.app/w/Segment_Categories>
-#[derive(Debug)]
+#[derive(EnumKind, Debug)]
+#[enum_kind(ActionableSegmentKind, derive(Hash))]
 pub enum ActionableSegment {
 	/// Sponsor
 	///

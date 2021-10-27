@@ -53,7 +53,7 @@ pub struct ClientBuilder {
 
 impl ClientBuilder {
 	/// The default API URL to use.
-	pub const DEFAULT_BASE_URL: &'static str = "https://sponsor.ajay.app";
+	pub const DEFAULT_BASE_URL: &'static str = "https://sponsor.ajay.app/api";
 	/// The default hash prefix length.
 	#[cfg(feature = "private_searches")]
 	pub const DEFAULT_HASH_PREFIX_LENGTH: u8 = 4;
@@ -93,12 +93,13 @@ impl ClientBuilder {
 		}
 	}
 
-	/// Sets the base URL to access for the API.
+	/// Sets the base URL to access for the API. This includes the `/api` in
+	/// official instances.
 	///
 	/// You should only have to change this if working with a different instance
 	/// of the SponsorBlock database.
 	pub fn base_url(&mut self, base_url: &str) -> &mut Self {
-		self.base_url = base_url.to_owned();
+		self.base_url = base_url.trim_end_matches('/').to_owned();
 		self
 	}
 

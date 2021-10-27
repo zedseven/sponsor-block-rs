@@ -7,20 +7,16 @@ use sha2::{Digest, Sha256};
 #[cfg(feature = "private_searches")]
 use crate::util::bytes_to_hex_string;
 use crate::{
-	api::{
-		ACTION_MUTE_NAME,
-		ACTION_SKIP_NAME,
-		ENDCARDS_CREDITS_NAME,
-		HIGHLIGHT_NAME,
-		INTERACTION_REMINDER_NAME,
-		INTERMISSION_INTRO_ANIMATION_NAME,
-		NON_MUSIC_NAME,
-		PREVIEW_RECAP_NAME,
-		SPONSOR_NAME,
-		UNPAID_SELF_PROMOTION_NAME,
-	},
+	api::{api_convert_action_type, api_convert_segment_kind},
 	error::{SponsorBlockError, SponsorBlockResult},
-	segment::{AcceptedCategories, Action, ActionableSegment, Segment, TimePoint, TimeSection},
+	segment::{
+		AcceptedCategories,
+		ActionableSegment,
+		ActionableSegmentKind,
+		Segment,
+		TimePoint,
+		TimeSection,
+	},
 	util::{get_response_text, to_url_array},
 	Client,
 };
@@ -66,11 +62,12 @@ impl Client {
 		required_segments: &[S],
 	) -> SponsorBlockResult<Vec<Segment>> {
 		// Function Constants
-		const API_ENDPOINT: &str = "/api/skipSegments";
+		const API_ENDPOINT: &str = "/skipSegments";
 
 		// Function-Specific Deserialization Structs
 		#[cfg(feature = "private_searches")]
-		#[derive(Deserialize, Debug)]
+		#[derive(Deserialize, Debug, Default)]
+		#[serde(default)]
 		struct RawHashMatch {
 			#[serde(rename = "videoID")]
 			video_id: String,
@@ -78,7 +75,8 @@ impl Client {
 			segments: Vec<RawSegment>,
 		}
 
-		#[derive(Deserialize, Debug)]
+		#[derive(Deserialize, Debug, Default)]
+		#[serde(default, rename_all = "camelCase")]
 		struct RawSegment {
 			category: String,
 			#[serde(rename = "actionType")]
@@ -174,61 +172,54 @@ impl Client {
 				}
 
 				Ok(Segment {
-					segment: match s.category.as_str() {
-						SPONSOR_NAME => ActionableSegment::Sponsor(TimeSection {
+					segment: match api_convert_segment_kind(s.category.as_str())? {
+						ActionableSegmentKind::Sponsor => ActionableSegment::Sponsor(TimeSection {
 							start: s.segment[0],
 							end: s.segment[1],
 						}),
-						UNPAID_SELF_PROMOTION_NAME => {
+						ActionableSegmentKind::UnpaidSelfPromotion => {
 							ActionableSegment::UnpaidSelfPromotion(TimeSection {
 								start: s.segment[0],
 								end: s.segment[1],
 							})
 						}
-						INTERACTION_REMINDER_NAME => {
+						ActionableSegmentKind::InteractionReminder => {
 							ActionableSegment::InteractionReminder(TimeSection {
 								start: s.segment[0],
 								end: s.segment[1],
 							})
 						}
-						HIGHLIGHT_NAME => ActionableSegment::Highlight(TimePoint {
-							point: s.segment[0],
-						}),
-						INTERMISSION_INTRO_ANIMATION_NAME => {
+						ActionableSegmentKind::Highlight => {
+							ActionableSegment::Highlight(TimePoint {
+								point: s.segment[0],
+							})
+						}
+						ActionableSegmentKind::IntermissionIntroAnimation => {
 							ActionableSegment::IntermissionIntroAnimation(TimeSection {
 								start: s.segment[0],
 								end: s.segment[1],
 							})
 						}
-						ENDCARDS_CREDITS_NAME => ActionableSegment::EndcardsCredits(TimeSection {
-							start: s.segment[0],
-							end: s.segment[1],
-						}),
-						PREVIEW_RECAP_NAME => ActionableSegment::PreviewRecap(TimeSection {
-							start: s.segment[0],
-							end: s.segment[1],
-						}),
-						NON_MUSIC_NAME => ActionableSegment::NonMusic(TimeSection {
-							start: s.segment[0],
-							end: s.segment[1],
-						}),
-						unknown_value => {
-							return Err(SponsorBlockError::UnknownValue {
-								r#type: "category".to_owned(),
-								value: unknown_value.to_owned(),
+						ActionableSegmentKind::EndcardsCredits => {
+							ActionableSegment::EndcardsCredits(TimeSection {
+								start: s.segment[0],
+								end: s.segment[1],
+							})
+						}
+						ActionableSegmentKind::PreviewRecap => {
+							ActionableSegment::PreviewRecap(TimeSection {
+								start: s.segment[0],
+								end: s.segment[1],
+							})
+						}
+						ActionableSegmentKind::NonMusic => {
+							ActionableSegment::NonMusic(TimeSection {
+								start: s.segment[0],
+								end: s.segment[1],
 							})
 						}
 					},
-					action_type: match s.action_type.as_str() {
-						ACTION_SKIP_NAME => Action::Skip,
-						ACTION_MUTE_NAME => Action::Mute,
-						unknown_value => {
-							return Err(SponsorBlockError::UnknownValue {
-								r#type: "actionType".to_owned(),
-								value: unknown_value.to_owned(),
-							})
-						}
-					},
+					action_type: api_convert_action_type(s.action_type.as_str())?,
 					uuid: s.uuid,
 					locked: s.locked != 0,
 					votes: s.votes,

@@ -25,7 +25,10 @@ pub struct ApiStatus {
 	pub request_time_taken: u32,
 	/// The load average for the server. The first entry is the average for 5
 	/// minutes, and the second is for 15 minutes.
-	#[serde(rename = "loadAvg")]
+	///
+	/// If you want more information about the source of this information, visit
+	/// <https://github.com/ajayyy/SponsorBlockServer/blob/06af78c770b82722be8b03d2b1b82eb7409f675b/src/routes/getStatus.ts#L18>
+	#[serde(rename = "loadavg")]
 	pub load_average: [f32; 2],
 }
 
@@ -40,7 +43,7 @@ impl Client {
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
 	pub async fn fetch_api_status(&self) -> SponsorBlockResult<ApiStatus> {
 		// Function Constants
-		const API_ENDPOINT: &str = "/api/status";
+		const API_ENDPOINT: &str = "/status";
 
 		// Build the request
 		let request = self.http.get(format!("{}{}", &self.base_url, API_ENDPOINT));
