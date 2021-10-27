@@ -5,7 +5,7 @@ can find complete documentation for [here](https://wiki.sponsor.ajay.app/w/API_D
 
 Uses SponsorBlock data licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 from https://sponsor.ajay.app/.
-Please see the [SponsorBlock data license](https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License)
+Please see the [SponsorBlock Database and API License](https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License)
 for more information.
 
 # Project License
