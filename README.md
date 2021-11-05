@@ -15,6 +15,23 @@ for more information.
 This library is still missing many features of the full API, but it contains many
 segment-retrieval functions necessary for use of the service.
 
+## Example
+The following is a short example of how you might fetch the segments for a
+video:
+```rust
+use sponsor_block::{AcceptedCategories, Client};
+
+const USER_ID: &str = "your local user id - it should be random and treated like a password";
+
+let client = Client::new(USER_ID);
+let video_segments = client
+    .fetch_segments("7U-RbOKanYs", AcceptedCategories::all())
+    .await
+    .ok();
+
+// Then do something with your video segments...
+```
+
 ## Project License
 This project is licensed under either of
 

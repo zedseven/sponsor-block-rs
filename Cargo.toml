@@ -7,6 +7,8 @@ license = "MIT OR APACHE-2.0"
 repository = "https://github.com/zedseven/sponsor-block-rs"
 homepage = "https://github.com/zedseven/sponsor-block-rs"
 description = "A Rust wrapper for the SponsorBlock API."
+categories = ["api-bindings"]
+keywords = ["ads", "sponsors", "adblock", "metadata", "youtube"]
 
 [dependencies]
 bitflags = "1.3"
