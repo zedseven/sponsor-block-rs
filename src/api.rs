@@ -1,11 +1,5 @@
 //! API Constants and components for directly interfacing with the API.
 
-use std::{
-	error::Error,
-	fmt::{Display, Formatter},
-};
-
-use serde::de::{Error as DeserializationError, StdError};
 use thiserror::Error;
 
 use crate::{
@@ -13,8 +7,6 @@ use crate::{
 	AcceptedCategories,
 	Action,
 	ActionableSegmentKind,
-	SponsorBlockError,
-	SponsorBlockResult,
 };
 
 // The API names for categories
