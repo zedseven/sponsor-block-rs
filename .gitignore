@@ -19,3 +19,6 @@ Cargo.lock
 
 # Environment variable files (for development, often containing private information)
 **/.env
+
+# Local To-Do file
+TODO.md
