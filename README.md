@@ -1,4 +1,9 @@
 # sponsor-block-rs
+[![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
+[![# Issues](https://img.shields.io/github/issues/zedseven/sponsor-block-rs?logo=github)](https://github.com/zedseven/sponsor-block-rs/issues)
+[![Crates.io](https://img.shields.io/crates/v/sponsor-block?logo=rust)](https://crates.io/crates/sponsor-block)
+[![Crate Downloads](https://img.shields.io/crates/d/sponsor-block?logo=azure-artifacts)](https://crates.io/crates/sponsor-block)
+
 ### In active development. This is not ready for use yet - once ready, it'll be on crates.io.
 A Rust wrapper for the [SponsorBlock](https://sponsor.ajay.app/) API, which you
 can find complete documentation for [here](https://wiki.sponsor.ajay.app/w/API_Docs).
@@ -8,7 +13,7 @@ from https://sponsor.ajay.app/.
 Please see the [SponsorBlock Database and API License](https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License)
 for more information.
 
-# Project License
+## Project License
 This project is licensed under either of
 
 - Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
@@ -16,9 +21,9 @@ This project is licensed under either of
 - MIT license ([LICENSE-MIT](LICENSE-MIT) or
   http://opensource.org/licenses/MIT)
 
-at your option. 
+at your option.
 
 ### Contribution
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in sponsor-block-rs by you, as defined in the Apache-2.0 license,
+for inclusion in *sponsor-block-rs* by you, as defined in the Apache-2.0 license,
 shall be dual licensed as above, without any additional terms or conditions.

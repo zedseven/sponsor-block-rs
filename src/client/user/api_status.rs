@@ -37,8 +37,9 @@ impl Client {
 	/// Fetches the API status.
 	///
 	/// # Errors
-	/// Can return any error type from [`SponsorBlockError`]. See the error type
-	/// definitions for explanations of when they might be encountered.
+	/// Can return pretty much any error type from [`SponsorBlockError`]. See
+	/// the error type definitions for explanations of when they might be
+	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
 	pub async fn fetch_api_status(&self) -> SponsorBlockResult<ApiStatus> {

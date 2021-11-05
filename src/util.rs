@@ -24,16 +24,41 @@ pub(crate) async fn get_response_text(response: Response) -> SponsorBlockResult<
 }
 
 pub(crate) fn to_url_array<S: AsRef<str>>(slice: &[S]) -> String {
+	to_url_array_conditional(slice, |_| true)
+}
+
+pub(crate) fn to_url_array_conditional<S, P>(slice: &[S], predicate: P) -> String
+where
+	S: AsRef<str>,
+	P: Fn(&S) -> bool,
+{
+	to_url_array_conditional_convert(slice, predicate, |s| s)
+}
+
+pub(crate) fn to_url_array_conditional_convert<'e, E, S, P, C>(
+	slice: &'e [E],
+	predicate: P,
+	convert: C,
+) -> String
+where
+	S: AsRef<str>,
+	P: Fn(&'e E) -> bool,
+	C: Fn(&'e E) -> S,
+{
 	let mut result = String::from('[');
 
 	let mut pushed_already = false;
 	for s in slice.iter() {
+		if !predicate(s) {
+			continue;
+		}
+
 		if pushed_already {
 			result.push(',');
 		}
 
 		result.push('"');
-		result.push_str(s.as_ref());
+		result.push_str(convert(s).as_ref());
 		result.push('"');
 
 		pushed_already = true;
@@ -60,15 +85,31 @@ pub(crate) fn bytes_to_hex_string(bytes: &[u8]) -> String {
 ///
 /// This cannot be used directly with [`serde`] - a wrapper deserializer is
 /// required for each type mapping, specifying the conversion function to use.
-pub(crate) fn map_hashmap_key_from_str<'de, D, T, O, F, E>(
+pub(crate) fn bool_from_integer_str<'de, D>(deserializer: D) -> Result<bool, D::Error>
+where
+	D: Deserializer<'de>,
+{
+	let raw: isize = isize::deserialize(deserializer)?;
+	Ok(raw != 0)
+}
+
+/// A custom deserializer that maps a [`HashMap`]'s keys using an arbitrary
+/// function.
+///
+/// Failed conversions are silently dropped. This is so an existing version of
+/// the library can remain functional if new keys are added to the API.
+///
+/// This cannot be used directly with [`serde`] - a wrapper deserializer is
+/// required for each type mapping, specifying the conversion function to use.
+pub(crate) fn map_hashmap_key_from_str<'de, D, T, O, C, E>(
 	deserializer: D,
-	convert_func: F,
+	convert_func: C,
 ) -> Result<HashMap<T, O>, D::Error>
 where
 	D: Deserializer<'de>,
 	T: Hash + Eq,
 	O: Deserialize<'de>,
-	F: Fn(&str) -> Result<T, E>,
+	C: Fn(&str) -> Result<T, E>,
 {
 	let raw: HashMap<&str, O> = HashMap::deserialize(deserializer)?;
 	Ok(raw

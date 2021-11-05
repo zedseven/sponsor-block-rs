@@ -47,7 +47,7 @@ pub enum SponsorBlockError {
 	// Serialization
 	/// An error encountered when deserializing JSON data received from the API.
 	///
-	/// If encountering this, it's possible the library version you're using is
+	/// If encountering this, it's likely the library version you're using is
 	/// out of date with the API. If that's the case, please open an issue.
 	///
 	/// Contains the internal [`serde_json::Error`].
@@ -59,19 +59,6 @@ pub enum SponsorBlockError {
 	/// requirements.
 	#[error("data received from the API does not meet verification: {0}")]
 	BadData(String),
-
-	// Out-of-date Library(?)
-	/// The library doesn't recognize a value it received from the API.
-	///
-	/// If encountering this, it's likely the library version you're using is
-	/// out of date with the API. If that's the case, please open an issue.
-	#[error("received an unrecognized value of type '{r#type}' from the API: {value}")]
-	UnknownValue {
-		/// The value's category or type.
-		r#type: String,
-		/// The value that isn't recognized.
-		value: String,
-	},
 }
 
 /// An HTTP status code number.

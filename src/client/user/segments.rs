@@ -7,40 +7,122 @@ use sha2::{Digest, Sha256};
 #[cfg(feature = "private_searches")]
 use crate::util::bytes_to_hex_string;
 use crate::{
-	api::{api_convert_action_type, api_convert_segment_kind},
+	api::convert_category_bitflags_to_url,
 	error::{SponsorBlockError, SponsorBlockResult},
-	segment::{
-		AcceptedCategories,
-		ActionableSegment,
-		ActionableSegmentKind,
-		Segment,
-		TimePoint,
-		TimeSection,
-	},
-	util::{get_response_text, to_url_array},
+	segment::{AcceptedCategories, ActionableSegmentKind, Segment},
+	util::{bool_from_integer_str, get_response_text, to_url_array},
+	Action,
+	AdditionalSegmentInfo,
 	Client,
+	SegmentUuid,
+	SegmentUuidSlice,
+	VideoId,
+	VideoIdSlice,
 };
+
+// Function-Specific Deserialization Structs
+#[cfg(feature = "private_searches")]
+#[derive(Deserialize, Debug, Default)]
+#[serde(default)]
+struct RawHashMatch {
+	#[serde(rename = "videoID")]
+	video_id: VideoId,
+	hash: String,
+	segments: Vec<RawSegment>,
+}
+
+#[derive(Deserialize, Debug, Default)]
+#[serde(default, rename_all = "camelCase")]
+struct RawSegment {
+	category: ActionableSegmentKind,
+	#[serde(rename = "actionType")]
+	action_type: Action,
+	#[serde(rename = "segment")]
+	time_points: Option<[f32; 2]>,
+	start_time: Option<f32>,
+	end_time: Option<f32>,
+	#[serde(rename = "UUID")]
+	uuid: SegmentUuid,
+	#[serde(deserialize_with = "bool_from_integer_str")]
+	locked: bool,
+	votes: i32,
+	#[serde(rename = "videoDuration")]
+	video_duration_upon_submission: f32,
+	#[serde(flatten)]
+	additional_info: AdditionalSegmentInfo,
+}
+
+impl RawSegment {
+	fn convert_to_segment(raw: Self, additional_info: bool) -> SponsorBlockResult<Segment> {
+		let time_points = if let Some(points) = raw.time_points {
+			(points[0], points[1])
+		} else {
+			(
+				raw.start_time
+					.expect("time_points was empty but so is start_time"),
+				raw.end_time
+					.expect("time_points was empty but so is end_time"),
+			)
+		};
+		if time_points.0 > time_points.1 {
+			return Err(SponsorBlockError::BadData(format!(
+				"segment start ({}) > end ({})",
+				time_points.0, time_points.1
+			)));
+		}
+		if time_points.0 < 0.0 {
+			return Err(SponsorBlockError::BadData(format!(
+				"segment start ({}) < 0",
+				time_points.0
+			)));
+		}
+		if time_points.1 < 0.0 {
+			return Err(SponsorBlockError::BadData(format!(
+				"segment end ({}) < 0",
+				time_points.1
+			)));
+		}
+
+		Ok(Segment {
+			segment: raw.category.to_actionable_segment(time_points),
+			action_type: raw.action_type,
+			uuid: raw.uuid,
+			locked: raw.locked,
+			votes: raw.votes,
+			video_duration_on_submission: raw.video_duration_upon_submission,
+			additional_info: if additional_info {
+				Some(raw.additional_info)
+			} else {
+				None
+			},
+		})
+	}
+}
 
 // Function Implementation
 impl Client {
 	/// Fetches the segments for a given video ID.
 	///
-	/// # Errors
-	/// Can return any error type from [`SponsorBlockError`]. See the error type
-	/// definitions for explanations of when they might be encountered.
+	/// This function *does not* return additional segment info.
 	///
-	/// The only error type among them you may want to handle differently is
-	/// [`HttpClient(404)`], as that indicates that no videos could be found in
-	/// the database matching what was provided.
+	/// # Errors
+	/// Can return pretty much any error type from [`SponsorBlockError`]. See
+	/// the error type definitions for explanations of when they might be
+	/// encountered.
+	///
+	/// The only error types among them you may want to handle differently are
+	/// [`HttpClient(404)`] and [`NoMatchingVideoHash`], as they indicate that
+	/// no videos could be found in the database matching what was provided.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
 	/// [`HttpClient(404)`]: crate::SponsorBlockError::HttpClient
+	/// [`NoMatchingVideoHash`]: crate::SponsorBlockError::NoMatchingVideoHash
 	pub async fn fetch_segments(
 		&self,
-		video_id: &str,
+		video_id: &VideoIdSlice,
 		accepted_categories: AcceptedCategories,
 	) -> SponsorBlockResult<Vec<Segment>> {
-		self.fetch_segments_with_required::<&str>(video_id, accepted_categories, &[])
+		self.fetch_segments_with_required::<&SegmentUuidSlice>(video_id, accepted_categories, &[])
 			.await
 	}
 
@@ -50,45 +132,21 @@ impl Client {
 	/// retrieved, even if they don't meet the minimum vote threshold. If this
 	/// isn't something you need, use the regular [`fetch_segments`] instead.
 	///
+	/// This function *does not* return additional segment info.
+	///
 	/// # Errors
 	/// See the Errors section of the [base version of this
 	/// function](Self::fetch_segments).
 	///
 	/// [`fetch_segments`]: Self::fetch_segments
-	pub async fn fetch_segments_with_required<S: AsRef<str>>(
+	pub async fn fetch_segments_with_required<S: AsRef<SegmentUuidSlice>>(
 		&self,
-		video_id: &str,
+		video_id: &VideoIdSlice,
 		accepted_categories: AcceptedCategories,
 		required_segments: &[S],
 	) -> SponsorBlockResult<Vec<Segment>> {
 		// Function Constants
 		const API_ENDPOINT: &str = "/skipSegments";
-
-		// Function-Specific Deserialization Structs
-		#[cfg(feature = "private_searches")]
-		#[derive(Deserialize, Debug, Default)]
-		#[serde(default)]
-		struct RawHashMatch {
-			#[serde(rename = "videoID")]
-			video_id: String,
-			hash: String,
-			segments: Vec<RawSegment>,
-		}
-
-		#[derive(Deserialize, Debug, Default)]
-		#[serde(default, rename_all = "camelCase")]
-		struct RawSegment {
-			category: String,
-			#[serde(rename = "actionType")]
-			action_type: String,
-			segment: [f32; 2],
-			#[serde(rename = "UUID")]
-			uuid: String,
-			locked: u8,
-			votes: i32,
-			#[serde(rename = "videoDuration")]
-			video_duration_upon_submission: f32,
-		}
 
 		// Build the request and send it
 		let mut request;
@@ -118,7 +176,10 @@ impl Client {
 		}
 
 		request = request
-			.query(&[("categories", accepted_categories.gen_url_value())])
+			.query(&[(
+				"categories",
+				convert_category_bitflags_to_url(accepted_categories),
+			)])
 			.query(&[("service", &self.service)]);
 		if !required_segments.is_empty() {
 			request = request.query(&[("requiredSegments", to_url_array(required_segments))]);
@@ -131,7 +192,7 @@ impl Client {
 		let mut video_segments;
 		#[cfg(not(feature = "private_searches"))]
 		{
-			video_segments = from_json_str::<Vec<RawSegment>>(response.as_str())?
+			video_segments = from_json_str::<Vec<RawSegment>>(response.as_str())?;
 		}
 		#[cfg(feature = "private_searches")]
 		{
@@ -151,81 +212,61 @@ impl Client {
 
 		video_segments
 			.drain(..)
-			.map(|s| {
-				if s.segment[0] > s.segment[1] {
-					return Err(SponsorBlockError::BadData(format!(
-						"segment start ({}) > end ({})",
-						s.segment[0], s.segment[1]
-					)));
-				}
-				if s.segment[0] < 0.0 {
-					return Err(SponsorBlockError::BadData(format!(
-						"segment start ({}) < 0",
-						s.segment[0]
-					)));
-				}
-				if s.segment[1] < 0.0 {
-					return Err(SponsorBlockError::BadData(format!(
-						"segment end ({}) < 0",
-						s.segment[1]
-					)));
-				}
+			.map(|s| RawSegment::convert_to_segment(s, false))
+			.collect()
+	}
 
-				Ok(Segment {
-					segment: match api_convert_segment_kind(s.category.as_str())? {
-						ActionableSegmentKind::Sponsor => ActionableSegment::Sponsor(TimeSection {
-							start: s.segment[0],
-							end: s.segment[1],
-						}),
-						ActionableSegmentKind::UnpaidSelfPromotion => {
-							ActionableSegment::UnpaidSelfPromotion(TimeSection {
-								start: s.segment[0],
-								end: s.segment[1],
-							})
-						}
-						ActionableSegmentKind::InteractionReminder => {
-							ActionableSegment::InteractionReminder(TimeSection {
-								start: s.segment[0],
-								end: s.segment[1],
-							})
-						}
-						ActionableSegmentKind::Highlight => {
-							ActionableSegment::Highlight(TimePoint {
-								point: s.segment[0],
-							})
-						}
-						ActionableSegmentKind::IntermissionIntroAnimation => {
-							ActionableSegment::IntermissionIntroAnimation(TimeSection {
-								start: s.segment[0],
-								end: s.segment[1],
-							})
-						}
-						ActionableSegmentKind::EndcardsCredits => {
-							ActionableSegment::EndcardsCredits(TimeSection {
-								start: s.segment[0],
-								end: s.segment[1],
-							})
-						}
-						ActionableSegmentKind::PreviewRecap => {
-							ActionableSegment::PreviewRecap(TimeSection {
-								start: s.segment[0],
-								end: s.segment[1],
-							})
-						}
-						ActionableSegmentKind::NonMusic => {
-							ActionableSegment::NonMusic(TimeSection {
-								start: s.segment[0],
-								end: s.segment[1],
-							})
-						}
-					},
-					action_type: api_convert_action_type(s.action_type.as_str())?,
-					uuid: s.uuid,
-					locked: s.locked != 0,
-					votes: s.votes,
-					video_duration_upon_submission: s.video_duration_upon_submission,
-				})
-			})
+	/// Fetches complete info for a segment.
+	///
+	/// This function *does* return additional segment info.
+	///
+	/// # Errors
+	/// Can return pretty much any error type from [`SponsorBlockError`]. See
+	/// the error type definitions for explanations of when they might be
+	/// encountered.
+	///
+	/// [`SponsorBlockError`]: crate::SponsorBlockError
+	pub async fn fetch_segment_info<S: AsRef<SegmentUuidSlice>>(
+		&self,
+		segment_uuid: S,
+	) -> SponsorBlockResult<Segment> {
+		Ok(self
+			.fetch_segment_info_multiple(&[segment_uuid])
+			.await?
+			.pop()
+			.ok_or_else(|| SponsorBlockError::BadData("no segments found".to_owned()))?)
+	}
+
+	/// Fetches complete info for segments.
+	///
+	/// This function *does* return additional segment info.
+	///
+	/// # Errors
+	/// Can return pretty much any error type from [`SponsorBlockError`]. See
+	/// the error type definitions for explanations of when they might be
+	/// encountered.
+	///
+	/// [`SponsorBlockError`]: crate::SponsorBlockError
+	pub async fn fetch_segment_info_multiple<S: AsRef<SegmentUuidSlice>>(
+		&self,
+		segment_uuids: &[S],
+	) -> SponsorBlockResult<Vec<Segment>> {
+		// Function Constants
+		const API_ENDPOINT: &str = "/segmentInfo";
+
+		// Build the request and send it
+		let request = self
+			.http
+			.get(format!("{}{}", &self.base_url, API_ENDPOINT))
+			.query(&[("UUIDs", to_url_array(segment_uuids))]);
+		dbg!(&request);
+		let response = get_response_text(request.send().await?).await?;
+		dbg!(&response);
+
+		// Deserialize the response and parse it into the output
+		from_json_str::<Vec<RawSegment>>(response.as_str())?
+			.drain(..)
+			.map(|s| RawSegment::convert_to_segment(s, true))
 			.collect()
 	}
 }

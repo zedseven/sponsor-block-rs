@@ -2,7 +2,15 @@
 use serde::Deserialize;
 use serde_json::from_str as from_json_str;
 
-use crate::{error::SponsorBlockResult, util::get_response_text, Client};
+use crate::{
+	error::SponsorBlockResult,
+	util::get_response_text,
+	Client,
+	LocalUserIdSlice,
+	PublicUserId,
+	PublicUserIdSlice,
+	SegmentUuid,
+};
 
 /// The results of a user info request.
 #[derive(Deserialize, Debug, Default)]
@@ -10,7 +18,7 @@ use crate::{error::SponsorBlockResult, util::get_response_text, Client};
 pub struct UserInfo {
 	/// The user's public user ID.
 	#[serde(rename = "userID")]
-	pub public_user_id: String,
+	pub public_user_id: PublicUserId,
 	/// The user's username.
 	pub user_name: Option<String>,
 	/// The number of minutes this user has saved other users.
@@ -34,7 +42,7 @@ pub struct UserInfo {
 	pub vip: bool,
 	/// the UUID of the last submitted segment.
 	#[serde(rename = "lastSegmentID")]
-	pub last_segment_id: Option<String>,
+	pub last_segment_id: Option<SegmentUuid>,
 }
 
 impl UserInfo {
@@ -61,13 +69,14 @@ impl Client {
 	/// Fetches a user's info using a public user ID.
 	///
 	/// # Errors
-	/// Can return any error type from [`SponsorBlockError`]. See the error type
-	/// definitions for explanations of when they might be encountered.
+	/// Can return pretty much any error type from [`SponsorBlockError`]. See
+	/// the error type definitions for explanations of when they might be
+	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
 	pub async fn fetch_user_info_public(
 		&self,
-		public_user_id: &str,
+		public_user_id: &PublicUserIdSlice,
 	) -> SponsorBlockResult<UserInfo> {
 		// Build the request
 		let request = self
@@ -96,11 +105,15 @@ impl Client {
 	/// Fetches a user's info using a local (private) user ID.
 	///
 	/// # Errors
-	/// Can return any error type from [`SponsorBlockError`]. See the error type
-	/// definitions for explanations of when they might be encountered.
+	/// Can return pretty much any error type from [`SponsorBlockError`]. See
+	/// the error type definitions for explanations of when they might be
+	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_user_info_local(&self, local_user_id: &str) -> SponsorBlockResult<UserInfo> {
+	pub async fn fetch_user_info_local(
+		&self,
+		local_user_id: &LocalUserIdSlice,
+	) -> SponsorBlockResult<UserInfo> {
 		// Build the request
 		let request = self
 			.http

@@ -11,6 +11,26 @@ use reqwest::{Client as ReqwestClient, ClientBuilder as ReqwestClientBuilder};
 // Public Exports
 pub use self::{admin::*, user::*, vip::*};
 
+// Type Definitions
+/// A video ID.
+pub type VideoId = String;
+/// The ref version of [`VideoId`] for use in functions.
+pub type VideoIdSlice = str;
+/// A public user ID. This value is a hash of the [`LocalUserId`] and is used
+/// publicly.
+pub type PublicUserId = String;
+/// The ref version of [`PublicUserId`] for use in functions.
+pub type PublicUserIdSlice = str;
+/// A local/private user ID. This value should be kept private and treated like
+/// a password.
+pub type LocalUserId = String;
+/// The ref version of [`LocalUserId`] for use in functions.
+pub type LocalUserIdSlice = str;
+/// A UUID for a segment, uniquely identifying it in the database.
+pub type SegmentUuid = String;
+/// The ref version of [`SegmentUuid`] for use in functions.
+pub type SegmentUuidSlice = str;
+
 /// The client for interfacing with SponsorBlock.
 pub struct Client {
 	// Internal
