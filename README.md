@@ -4,7 +4,6 @@
 [![Crates.io](https://img.shields.io/crates/v/sponsor-block?logo=rust)](https://crates.io/crates/sponsor-block)
 [![Crate Downloads](https://img.shields.io/crates/d/sponsor-block?logo=azure-artifacts)](https://crates.io/crates/sponsor-block)
 
-### In active development. This is not ready for use yet - once ready, it'll be on crates.io.
 A Rust wrapper for the [SponsorBlock](https://sponsor.ajay.app/) API, which you
 can find complete documentation for [here](https://wiki.sponsor.ajay.app/w/API_Docs).
 
@@ -12,6 +11,9 @@ Uses SponsorBlock data licensed under [CC BY-NC-SA 4.0](https://creativecommons.
 from https://sponsor.ajay.app/.
 Please see the [SponsorBlock Database and API License](https://github.com/ajayyy/SponsorBlock/wiki/Database-and-API-License)
 for more information.
+
+This library is still missing many features of the full API, but it contains many
+segment-retrieval functions necessary for use of the service.
 
 ## Project License
 This project is licensed under either of
