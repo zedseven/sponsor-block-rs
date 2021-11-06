@@ -184,9 +184,7 @@ impl Client {
 		if !required_segments.is_empty() {
 			request = request.query(&[("requiredSegments", to_url_array(required_segments))]);
 		}
-		dbg!(&request);
 		let response = get_response_text(request.send().await?).await?;
-		dbg!(&response);
 
 		// Deserialize the response and parse it into the output
 		let mut video_segments;
@@ -259,9 +257,7 @@ impl Client {
 			.http
 			.get(format!("{}{}", &self.base_url, API_ENDPOINT))
 			.query(&[("UUIDs", to_url_array(segment_uuids))]);
-		dbg!(&request);
 		let response = get_response_text(request.send().await?).await?;
-		dbg!(&response);
 
 		// Deserialize the response and parse it into the output
 		from_json_str::<Vec<RawSegment>>(response.as_str())?
