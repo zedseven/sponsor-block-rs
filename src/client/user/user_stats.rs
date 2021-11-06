@@ -1,12 +1,12 @@
-use std::collections::HashMap;
-
 // Uses
+use std::{collections::HashMap, result::Result as StdResult};
+
 use serde::{Deserialize, Deserializer};
 use serde_json::from_str as from_json_str;
 
 use crate::{
 	api::{convert_to_action_type, convert_to_segment_kind},
-	error::SponsorBlockResult,
+	error::Result,
 	util::{get_response_text, map_hashmap_key_from_str},
 	Action,
 	ActionableSegmentKind,
@@ -37,13 +37,13 @@ pub struct UserStats {
 
 fn map_category_kinds<'de, D: Deserializer<'de>, O: Deserialize<'de>>(
 	deserializer: D,
-) -> Result<HashMap<ActionableSegmentKind, O>, D::Error> {
+) -> StdResult<HashMap<ActionableSegmentKind, O>, D::Error> {
 	map_hashmap_key_from_str(deserializer, convert_to_segment_kind)
 }
 
 fn map_action_types<'de, D: Deserializer<'de>, O: Deserialize<'de>>(
 	deserializer: D,
-) -> Result<HashMap<Action, O>, D::Error> {
+) -> StdResult<HashMap<Action, O>, D::Error> {
 	map_hashmap_key_from_str(deserializer, convert_to_action_type)
 }
 
@@ -78,7 +78,7 @@ impl Client {
 	pub async fn fetch_user_stats_public(
 		&self,
 		public_user_id: &PublicUserIdSlice,
-	) -> SponsorBlockResult<UserStats> {
+	) -> Result<UserStats> {
 		// Build the request
 		let request = self
 			.http
@@ -115,7 +115,7 @@ impl Client {
 	pub async fn fetch_user_stats_local(
 		&self,
 		local_user_id: &LocalUserIdSlice,
-	) -> SponsorBlockResult<UserStats> {
+	) -> Result<UserStats> {
 		// Build the request
 		let request = self
 			.http

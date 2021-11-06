@@ -1,4 +1,4 @@
-# sponsor-block-rs
+# sponsor-block
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
 [![# Issues](https://img.shields.io/github/issues/zedseven/sponsor-block-rs?logo=github)](https://github.com/zedseven/sponsor-block-rs/issues)
 [![Crates.io](https://img.shields.io/crates/v/sponsor-block?logo=rust)](https://crates.io/crates/sponsor-block)
@@ -14,6 +14,8 @@ for more information.
 
 This library is still missing many features of the full API, but it contains many
 segment-retrieval functions necessary for use of the service.
+
+For library documentation, visit [docs.rs](https://docs.rs/sponsor-block).
 
 ## Example
 The following is a short example of how you might fetch the segments for a
@@ -44,5 +46,5 @@ at your option.
 
 ### Contribution
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in *sponsor-block-rs* by you, as defined in the Apache-2.0 license,
+for inclusion in *sponsor-block* by you, as defined in the Apache-2.0 license,
 shall be dual licensed as above, without any additional terms or conditions.

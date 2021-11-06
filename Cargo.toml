@@ -1,6 +1,6 @@
 [package]
 name = "sponsor-block"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Zacchary Dempsey-Plante <zacc@ztdp.ca>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -8,12 +8,13 @@ repository = "https://github.com/zedseven/sponsor-block-rs"
 homepage = "https://github.com/zedseven/sponsor-block-rs"
 description = "A Rust wrapper for the SponsorBlock API."
 categories = ["api-bindings"]
-keywords = ["ads", "sponsors", "adblock", "metadata", "youtube"]
+keywords = ["block", "ads", "sponsors", "adblock", "ad-block", "ad-blocking", "metadata", "youtube"]
 
 [dependencies]
 bitflags = "1.3"
 chrono = { version = "0.4", features = ["serde"] }
 enum-kinds = "0.5"
+rand = { version = "0.8", default-features = false, features = ["std", "std_rng"], optional = true }
 reqwest = "0.11"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -21,5 +22,18 @@ sha2 = { version = "0.9", optional = true }
 thiserror = "1.0"
 
 [features]
-default = ["private_searches"]
+# The set of features enabled by default.
+default = ["user", "private_searches"]
+# User functions, for standard use of the service.
+user = []
+# VIP functions, only really useful for VIP users.
+vip = []
+# Use hash-based segment searching, which significantly improves privacy at a slight bandwidth and
+# performance cost.
+# This should almost certainly be left enabled.
 private_searches = ["sha2"]
+# Include support for generating new local user IDs.
+gen_user_id = ["rand"]
+
+[package.metadata.docs.rs]
+all-features = true

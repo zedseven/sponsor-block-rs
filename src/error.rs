@@ -1,6 +1,8 @@
 //! Everything associated with library errors.
 
 // Uses
+use std::result;
+
 use thiserror::Error;
 
 /// The library error type.
@@ -64,4 +66,5 @@ pub enum SponsorBlockError {
 /// An HTTP status code number.
 pub type StatusCode = u16;
 
-pub(crate) type SponsorBlockResult<T> = Result<T, SponsorBlockError>;
+/// A convenience type for the return result of service calls.
+pub type Result<T> = result::Result<T, SponsorBlockError>;

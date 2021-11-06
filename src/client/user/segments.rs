@@ -8,7 +8,7 @@ use sha2::{Digest, Sha256};
 use crate::util::bytes_to_hex_string;
 use crate::{
 	api::convert_category_bitflags_to_url,
-	error::{SponsorBlockError, SponsorBlockResult},
+	error::{Result, SponsorBlockError},
 	segment::{AcceptedCategories, ActionableSegmentKind, Segment},
 	util::{bool_from_integer_str, get_response_text, to_url_array},
 	Action,
@@ -53,7 +53,7 @@ struct RawSegment {
 }
 
 impl RawSegment {
-	fn convert_to_segment(raw: Self, additional_info: bool) -> SponsorBlockResult<Segment> {
+	fn convert_to_segment(raw: Self, additional_info: bool) -> Result<Segment> {
 		let time_points = if let Some(points) = raw.time_points {
 			(points[0], points[1])
 		} else {
@@ -121,7 +121,7 @@ impl Client {
 		&self,
 		video_id: &VideoIdSlice,
 		accepted_categories: AcceptedCategories,
-	) -> SponsorBlockResult<Vec<Segment>> {
+	) -> Result<Vec<Segment>> {
 		self.fetch_segments_with_required::<&SegmentUuidSlice>(video_id, accepted_categories, &[])
 			.await
 	}
@@ -144,7 +144,7 @@ impl Client {
 		video_id: &VideoIdSlice,
 		accepted_categories: AcceptedCategories,
 		required_segments: &[S],
-	) -> SponsorBlockResult<Vec<Segment>> {
+	) -> Result<Vec<Segment>> {
 		// Function Constants
 		const API_ENDPOINT: &str = "/skipSegments";
 
@@ -165,13 +165,10 @@ impl Client {
 				bytes_to_hex_string(&hasher.finalize()[..])
 			};
 			request = self.http.get(format!(
-				"{}{}",
+				"{}{}/{}",
 				&self.base_url,
-				format!(
-					"{}/{}",
-					API_ENDPOINT,
-					&video_id_hash[0..self.hash_prefix_length as usize]
-				)
+				API_ENDPOINT,
+				&video_id_hash[0..self.hash_prefix_length as usize]
 			));
 		}
 
@@ -227,7 +224,7 @@ impl Client {
 	pub async fn fetch_segment_info<S: AsRef<SegmentUuidSlice>>(
 		&self,
 		segment_uuid: S,
-	) -> SponsorBlockResult<Segment> {
+	) -> Result<Segment> {
 		Ok(self
 			.fetch_segment_info_multiple(&[segment_uuid])
 			.await?
@@ -248,7 +245,7 @@ impl Client {
 	pub async fn fetch_segment_info_multiple<S: AsRef<SegmentUuidSlice>>(
 		&self,
 		segment_uuids: &[S],
-	) -> SponsorBlockResult<Vec<Segment>> {
+	) -> Result<Vec<Segment>> {
 		// Function Constants
 		const API_ENDPOINT: &str = "/segmentInfo";
 

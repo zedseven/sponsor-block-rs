@@ -2,7 +2,7 @@
 use serde::Deserialize;
 use serde_json::from_str as from_json_str;
 
-use crate::{error::SponsorBlockResult, util::get_response_text, Client};
+use crate::{error::Result, util::get_response_text, Client};
 
 /// The results of an API status request.
 #[derive(Deserialize, Debug, Default)]
@@ -42,7 +42,7 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_api_status(&self) -> SponsorBlockResult<ApiStatus> {
+	pub async fn fetch_api_status(&self) -> Result<ApiStatus> {
 		// Function Constants
 		const API_ENDPOINT: &str = "/status";
 

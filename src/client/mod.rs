@@ -1,15 +1,19 @@
 //! The SponsorBlock client.
 
 // Modules
-mod admin;
+#[cfg(feature = "user")]
 mod user;
+#[cfg(feature = "vip")]
 mod vip;
 
 // Uses
 use reqwest::{Client as ReqwestClient, ClientBuilder as ReqwestClientBuilder};
 
 // Public Exports
-pub use self::{admin::*, user::*, vip::*};
+#[cfg(feature = "user")]
+pub use self::user::*;
+#[cfg(feature = "vip")]
+pub use self::vip::*;
 
 // Type Definitions
 /// A video ID.
@@ -47,13 +51,13 @@ pub struct Client {
 impl Client {
 	/// Creates a new instance of the client with default configuration values.
 	#[must_use]
-	pub fn new<S: Into<String>>(user_id: S) -> Self {
+	pub fn new<U: Into<LocalUserId>>(user_id: U) -> Self {
 		ClientBuilder::new(user_id).build()
 	}
 
 	/// Creates a new instance of the [`ClientBuilder`].
 	#[must_use]
-	pub fn builder<S: Into<String>>(user_id: S) -> ClientBuilder {
+	pub fn builder<U: Into<LocalUserId>>(user_id: U) -> ClientBuilder {
 		ClientBuilder::new(user_id)
 	}
 }
@@ -64,7 +68,7 @@ pub struct ClientBuilder {
 	user_agent: String,
 
 	// Config
-	user_id: String,
+	user_id: LocalUserId,
 	base_url: String,
 	#[cfg(feature = "private_searches")]
 	hash_prefix_length: u8,
@@ -86,7 +90,7 @@ impl ClientBuilder {
 	/// Creates a new instance of the struct, with default values for all
 	/// configuration.
 	#[must_use]
-	pub fn new<S: Into<String>>(user_id: S) -> Self {
+	pub fn new<U: Into<LocalUserId>>(user_id: U) -> Self {
 		Self {
 			user_agent: Self::DEFAULT_USER_AGENT.to_owned(),
 			user_id: user_id.into(),

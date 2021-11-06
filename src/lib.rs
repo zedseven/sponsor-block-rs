@@ -5,15 +5,27 @@
 //!
 //! ```toml
 //! [dependencies]
-//! sponsor-block = "0.1"
+//! sponsor-block = "0.2"
 //! ```
 //!
 //! ### Features
-//! This crate only has one feature, which is on by default: `private_searches`.
-//! This enables the use of private
-//! [hash-based segment searching](https://wiki.sponsor.ajay.app/w/API_Docs#GET_.2Fapi.2FskipSegments.2F:sha256HashPrefix),
-//! which significantly improves privacy at a slight bandwidth and performance
-//! cost.
+//! Default features:
+//! - `private_searches`: This enables the use of private [hash-based segment searching](https://wiki.sponsor.ajay.app/w/API_Docs#GET_.2Fapi.2FskipSegments.2F:sha256HashPrefix),
+//!   which significantly improves privacy at a slight bandwidth and performance
+//!   cost.
+//!
+//!   You should almost certainly leave this on.
+//! - `user`: The standard set of user functions.
+//!
+//! Optional features:
+//! - `vip`: The set of functions for only VIP users.
+//! - `gen_user_id`: A utility function for generating local user IDs for use
+//!   with the service.
+//!
+//!   *Do not* use this every time you start up a client - prefer using a single
+//!   saved ID for the same 'user'. This is for cases where you may want to
+//!   generate new user IDs for users of your application, giving each user
+//!   their own ID.
 //!
 //! ## Example
 //! The following is a short example of how you might fetch the segments for a
@@ -65,8 +77,12 @@
 mod api;
 mod client;
 mod error;
+#[cfg(feature = "gen_user_id")]
+mod gen_user_id;
 mod segment;
 mod util;
 
 // Public Exports
+#[cfg(feature = "gen_user_id")]
+pub use self::gen_user_id::*;
 pub use self::{client::*, error::*, segment::*};

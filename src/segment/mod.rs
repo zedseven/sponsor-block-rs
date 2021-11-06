@@ -1,6 +1,8 @@
 //! Everything to do with segments.
 
 // Uses
+use std::result::Result as StdResult;
+
 use chrono::{serde::ts_milliseconds, DateTime, Utc};
 use enum_kinds::EnumKind;
 use serde::{de::Error, Deserialize, Deserializer};
@@ -10,8 +12,8 @@ use crate::{
 	util::bool_from_integer_str,
 	Client,
 	PublicUserId,
+	Result,
 	SegmentUuid,
-	SponsorBlockResult,
 	VideoId,
 };
 
@@ -63,7 +65,7 @@ impl Segment {
 	///
 	/// [`additional_info`]: Self::additional_info
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_additional_info(&mut self, client: &Client) -> SponsorBlockResult<bool> {
+	pub async fn fetch_additional_info(&mut self, client: &Client) -> Result<bool> {
 		if self.additional_info.is_some() {
 			return Ok(false);
 		}
@@ -139,7 +141,7 @@ pub enum Action {
 }
 
 impl<'de> Deserialize<'de> for Action {
-	fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+	fn deserialize<D: Deserializer<'de>>(deserializer: D) -> StdResult<Self, D::Error> {
 		let action_string = String::deserialize(deserializer)?;
 		convert_to_action_type(action_string.as_str()).map_err(D::Error::custom)
 	}
@@ -251,7 +253,7 @@ impl ActionableSegmentKind {
 }
 
 impl<'de> Deserialize<'de> for ActionableSegmentKind {
-	fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+	fn deserialize<D: Deserializer<'de>>(deserializer: D) -> StdResult<Self, D::Error> {
 		let action_string = String::deserialize(deserializer)?;
 		convert_to_segment_kind(action_string.as_str()).map_err(D::Error::custom)
 	}

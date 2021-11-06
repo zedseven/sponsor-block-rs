@@ -3,7 +3,7 @@ use serde::Deserialize;
 use serde_json::from_str as from_json_str;
 
 use crate::{
-	error::SponsorBlockResult,
+	error::Result,
 	util::get_response_text,
 	Client,
 	LocalUserIdSlice,
@@ -77,7 +77,7 @@ impl Client {
 	pub async fn fetch_user_info_public(
 		&self,
 		public_user_id: &PublicUserIdSlice,
-	) -> SponsorBlockResult<UserInfo> {
+	) -> Result<UserInfo> {
 		// Build the request
 		let request = self
 			.http
@@ -113,7 +113,7 @@ impl Client {
 	pub async fn fetch_user_info_local(
 		&self,
 		local_user_id: &LocalUserIdSlice,
-	) -> SponsorBlockResult<UserInfo> {
+	) -> Result<UserInfo> {
 		// Build the request
 		let request = self
 			.http
