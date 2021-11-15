@@ -1,8 +1,8 @@
 # sponsor-block
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
-[![# Issues](https://img.shields.io/github/issues/zedseven/sponsor-block-rs?logo=github)](https://github.com/zedseven/sponsor-block-rs/issues)
-[![Crates.io](https://img.shields.io/crates/v/sponsor-block?logo=rust)](https://crates.io/crates/sponsor-block)
-[![Crate Downloads](https://img.shields.io/crates/d/sponsor-block?logo=azure-artifacts)](https://crates.io/crates/sponsor-block)
+[![# Issues](https://img.shields.io/github/issues/zedseven/sponsor-block-rs.svg?logo=github)](https://github.com/zedseven/sponsor-block-rs/issues)
+[![Crates.io](https://img.shields.io/crates/v/sponsor-block.svg?logo=rust)](https://crates.io/crates/sponsor-block)
+[![Crate Downloads](https://img.shields.io/crates/d/sponsor-block.svg?logo=azure-artifacts)](https://crates.io/crates/sponsor-block)
 
 A Rust wrapper for the [SponsorBlock](https://sponsor.ajay.app/) API, which you
 can find complete documentation for [here](https://wiki.sponsor.ajay.app/w/API_Docs).
