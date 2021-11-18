@@ -1,5 +1,6 @@
 //! API Constants and components for directly interfacing with the API.
 
+// Uses
 use thiserror::Error;
 
 use crate::{
@@ -18,6 +19,7 @@ const INTERMISSION_INTRO_ANIMATION_NAME: &str = "intro";
 const ENDCARDS_CREDITS_NAME: &str = "outro";
 const PREVIEW_RECAP_NAME: &str = "preview";
 const NON_MUSIC_NAME: &str = "music_offtopic";
+const FILLER_TANGENT_NAME: &str = "filler";
 
 // The API names for actions
 const ACTION_SKIP_NAME: &str = "skip";
@@ -50,6 +52,7 @@ pub(crate) fn convert_to_segment_kind(
 		ENDCARDS_CREDITS_NAME => Ok(ActionableSegmentKind::EndcardsCredits),
 		PREVIEW_RECAP_NAME => Ok(ActionableSegmentKind::PreviewRecap),
 		NON_MUSIC_NAME => Ok(ActionableSegmentKind::NonMusic),
+		FILLER_TANGENT_NAME => Ok(ActionableSegmentKind::FillerTangent),
 		unknown_value => Err(UnknownValueError {
 			r#type: "category".to_owned(),
 			value: unknown_value.to_owned(),
@@ -88,6 +91,7 @@ pub(crate) fn convert_category_bitflags_to_url(accepted_categories: AcceptedCate
 		(AcceptedCategories::ENDCARDS_CREDITS, ENDCARDS_CREDITS_NAME),
 		(AcceptedCategories::PREVIEW_RECAP, PREVIEW_RECAP_NAME),
 		(AcceptedCategories::NON_MUSIC, NON_MUSIC_NAME),
+		(AcceptedCategories::FILLER_TANGENT, FILLER_TANGENT_NAME),
 	];
 
 	to_url_array_conditional_convert(

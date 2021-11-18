@@ -204,6 +204,12 @@ pub enum ActionableSegment {
 	/// Only for use in music videos. A section of the video with non-music
 	/// content.
 	NonMusic(TimeSection),
+
+	/// Filler Tangent
+	///
+	/// Tangential scenes added only for filler or humor that are not required
+	/// to understand the main content of the video.
+	FillerTangent(TimeSection),
 }
 
 impl ActionableSegmentKind {
@@ -245,6 +251,10 @@ impl ActionableSegmentKind {
 				end: time_points.1,
 			}),
 			ActionableSegmentKind::NonMusic => ActionableSegment::NonMusic(TimeSection {
+				start: time_points.0,
+				end: time_points.1,
+			}),
+			ActionableSegmentKind::FillerTangent => ActionableSegment::FillerTangent(TimeSection {
 				start: time_points.0,
 				end: time_points.1,
 			}),
