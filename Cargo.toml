@@ -1,6 +1,6 @@
 [package]
 name = "sponsor-block"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["Zacchary Dempsey-Plante <zacc@ztdp.ca>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"

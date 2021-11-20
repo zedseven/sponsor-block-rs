@@ -5,7 +5,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! sponsor-block = "0.2"
+//! sponsor-block = "0.5"
 //! ```
 //!
 //! ### Features
@@ -34,7 +34,8 @@
 //! ```rust,no_run
 //! use sponsor_block::{AcceptedCategories, Client};
 //!
-//! const USER_ID: &str = "your local user id - it should be random and treated like a password";
+//! // This should be random, treated like a password, and stored across sessions
+//! const USER_ID: &str = "your local user id";
 //!
 //! let client = Client::new(USER_ID);
 //! let video_segments = client
