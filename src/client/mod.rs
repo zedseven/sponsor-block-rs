@@ -7,6 +7,8 @@ mod user;
 mod vip;
 
 // Uses
+use core::time::Duration;
+
 use reqwest::{Client as ReqwestClient, ClientBuilder as ReqwestClientBuilder};
 
 // Public Exports
@@ -73,6 +75,7 @@ pub struct ClientBuilder {
 	#[cfg(feature = "private_searches")]
 	hash_prefix_length: u8,
 	service: String,
+	timeout: Option<Duration>,
 }
 
 impl ClientBuilder {
@@ -98,17 +101,19 @@ impl ClientBuilder {
 			#[cfg(feature = "private_searches")]
 			hash_prefix_length: Self::DEFAULT_HASH_PREFIX_LENGTH,
 			service: Self::DEFAULT_SERVICE.to_owned(),
+			timeout: None,
 		}
 	}
 
 	/// Builds the struct into an instance of [`Client`].
 	#[must_use]
 	pub fn build(&self) -> Client {
+		let mut http = ReqwestClientBuilder::new().user_agent(self.user_agent.clone());
+		if let Some(timeout) = self.timeout {
+			http = http.timeout(timeout);
+		}
 		Client {
-			http: ReqwestClientBuilder::new()
-				.user_agent(self.user_agent.clone())
-				.build()
-				.expect("unable to build the HTTP client"),
+			http: http.build().expect("unable to build the HTTP client"),
 			user_id: self.user_id.clone(),
 			base_url: self.base_url.clone(),
 			#[cfg(feature = "private_searches")]
@@ -148,6 +153,17 @@ impl ClientBuilder {
 	/// See <https://wiki.sponsor.ajay.app/w/Types#Service> for more information.
 	pub fn service(&mut self, service: &str) -> &mut Self {
 		self.service = service.to_owned();
+		self
+	}
+
+	/// Sets the HTTP request timeout.
+	///
+	/// The timeout is applied from when the request starts connecting until the
+	/// response body has finished.
+	///
+	/// The default is no timeout.
+	pub fn timeout(&mut self, timeout: Duration) -> &mut Self {
+		self.timeout = Some(timeout);
 		self
 	}
 }
