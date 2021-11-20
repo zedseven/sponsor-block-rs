@@ -53,14 +53,20 @@ struct RawSegment {
 }
 
 impl RawSegment {
-	fn convert_to_segment(raw: Self, additional_info: bool) -> Result<Segment> {
-		let time_points = if let Some(points) = raw.time_points {
+	/// Converts a raw segment that more closely matches the structure returned
+	/// by the API to the proper rusty [`Segment`] type.
+	///
+	/// `additional_info` determines whether or not to include
+	/// `RawSegment.additional_info`, since it is always populated by Serde but
+	/// not with useful values under certain circumstances.
+	fn convert_to_segment(self, additional_info: bool) -> Result<Segment> {
+		let time_points = if let Some(points) = self.time_points {
 			points
 		} else {
 			[
-				raw.start_time
+				self.start_time
 					.expect("time_points was empty but so is start_time"),
-				raw.end_time
+				self.end_time
 					.expect("time_points was empty but so is end_time"),
 			]
 		};
@@ -82,16 +88,24 @@ impl RawSegment {
 				time_points[1]
 			)));
 		}
+		if let Some(video_duration_upon_submission) = self.video_duration_upon_submission {
+			if video_duration_upon_submission < 0.0 {
+				return Err(SponsorBlockError::BadData(format!(
+					"video duration upon submission ({}) < 0",
+					video_duration_upon_submission
+				)));
+			}
+		}
 
 		Ok(Segment {
-			segment: raw.category.to_actionable_segment(time_points),
-			action_type: raw.action_type,
-			uuid: raw.uuid,
-			locked: raw.locked,
-			votes: raw.votes,
-			video_duration_on_submission: raw.video_duration_upon_submission,
+			segment: self.category.to_actionable_segment(time_points),
+			action_type: self.action_type,
+			uuid: self.uuid,
+			locked: self.locked,
+			votes: self.votes,
+			video_duration_on_submission: self.video_duration_upon_submission,
 			additional_info: if additional_info {
-				Some(raw.additional_info)
+				Some(self.additional_info)
 			} else {
 				None
 			},
@@ -207,7 +221,7 @@ impl Client {
 
 		video_segments
 			.drain(..)
-			.map(|s| RawSegment::convert_to_segment(s, false))
+			.map(|s| s.convert_to_segment(false))
 			.collect()
 	}
 
@@ -259,7 +273,7 @@ impl Client {
 		// Deserialize the response and parse it into the output
 		from_json_str::<Vec<RawSegment>>(response.as_str())?
 			.drain(..)
-			.map(|s| RawSegment::convert_to_segment(s, true))
+			.map(|s| s.convert_to_segment(true))
 			.collect()
 	}
 }
