@@ -219,50 +219,50 @@ pub enum ActionableSegment {
 }
 
 impl ActionableSegmentKind {
-	pub(crate) fn to_actionable_segment(self, time_points: (f32, f32)) -> ActionableSegment {
+	pub(crate) fn to_actionable_segment(self, time_points: [f32; 2]) -> ActionableSegment {
 		match self {
 			ActionableSegmentKind::Sponsor => ActionableSegment::Sponsor(TimeSection {
-				start: time_points.0,
-				end: time_points.1,
+				start: time_points[0],
+				end: time_points[1],
 			}),
 			ActionableSegmentKind::UnpaidSelfPromotion => {
 				ActionableSegment::UnpaidSelfPromotion(TimeSection {
-					start: time_points.0,
-					end: time_points.1,
+					start: time_points[0],
+					end: time_points[1],
 				})
 			}
 			ActionableSegmentKind::InteractionReminder => {
 				ActionableSegment::InteractionReminder(TimeSection {
-					start: time_points.0,
-					end: time_points.1,
+					start: time_points[0],
+					end: time_points[1],
 				})
 			}
 			ActionableSegmentKind::Highlight => ActionableSegment::Highlight(TimePoint {
-				point: time_points.0,
+				point: time_points[0],
 			}),
 			ActionableSegmentKind::IntermissionIntroAnimation => {
 				ActionableSegment::IntermissionIntroAnimation(TimeSection {
-					start: time_points.0,
-					end: time_points.1,
+					start: time_points[0],
+					end: time_points[1],
 				})
 			}
 			ActionableSegmentKind::EndcardsCredits => {
 				ActionableSegment::EndcardsCredits(TimeSection {
-					start: time_points.0,
-					end: time_points.1,
+					start: time_points[0],
+					end: time_points[1],
 				})
 			}
 			ActionableSegmentKind::PreviewRecap => ActionableSegment::PreviewRecap(TimeSection {
-				start: time_points.0,
-				end: time_points.1,
+				start: time_points[0],
+				end: time_points[1],
 			}),
 			ActionableSegmentKind::NonMusic => ActionableSegment::NonMusic(TimeSection {
-				start: time_points.0,
-				end: time_points.1,
+				start: time_points[0],
+				end: time_points[1],
 			}),
 			ActionableSegmentKind::FillerTangent => ActionableSegment::FillerTangent(TimeSection {
-				start: time_points.0,
-				end: time_points.1,
+				start: time_points[0],
+				end: time_points[1],
 			}),
 		}
 	}

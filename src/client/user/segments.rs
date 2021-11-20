@@ -55,31 +55,31 @@ struct RawSegment {
 impl RawSegment {
 	fn convert_to_segment(raw: Self, additional_info: bool) -> Result<Segment> {
 		let time_points = if let Some(points) = raw.time_points {
-			(points[0], points[1])
+			points
 		} else {
-			(
+			[
 				raw.start_time
 					.expect("time_points was empty but so is start_time"),
 				raw.end_time
 					.expect("time_points was empty but so is end_time"),
-			)
+			]
 		};
-		if time_points.0 > time_points.1 {
+		if time_points[0] > time_points[1] {
 			return Err(SponsorBlockError::BadData(format!(
 				"segment start ({}) > end ({})",
-				time_points.0, time_points.1
+				time_points[0], time_points[1]
 			)));
 		}
-		if time_points.0 < 0.0 {
+		if time_points[0] < 0.0 {
 			return Err(SponsorBlockError::BadData(format!(
 				"segment start ({}) < 0",
-				time_points.0
+				time_points[0]
 			)));
 		}
-		if time_points.1 < 0.0 {
+		if time_points[1] < 0.0 {
 			return Err(SponsorBlockError::BadData(format!(
 				"segment end ({}) < 0",
-				time_points.1
+				time_points[1]
 			)));
 		}
 
