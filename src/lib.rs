@@ -1,12 +1,7 @@
 //! A Rust wrapper for the SponsorBlock API.
 //!
 //! ## Usage
-//! Put this in your `Cargo.toml`:
-//!
-//! ```toml
-//! [dependencies]
-//! sponsor-block = "0.5"
-//! ```
+//! Simply add it to your `Cargo.toml` as you would any other crate.
 //!
 //! ### Features
 //! Default features:
