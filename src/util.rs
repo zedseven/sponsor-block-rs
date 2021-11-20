@@ -77,20 +77,29 @@ pub(crate) fn bytes_to_hex_string(bytes: &[u8]) -> String {
 	result
 }
 
-/// A custom deserializer that maps a [`HashMap`]'s keys using an arbitrary
-/// function.
+/// A custom deserializer that maps an integer to a boolean value based on
+/// whether it equals `0`.
 ///
-/// Failed conversions are silently dropped. This is so an existing version of
-/// the library can remain functional if new keys are added to the API.
-///
-/// This cannot be used directly with [`serde`] - a wrapper deserializer is
-/// required for each type mapping, specifying the conversion function to use.
+/// Many API fields that are boolean in nature use an integer representation,
+/// which is why.
 pub(crate) fn bool_from_integer_str<'de, D>(deserializer: D) -> StdResult<bool, D::Error>
 where
 	D: Deserializer<'de>,
 {
-	let raw: isize = isize::deserialize(deserializer)?;
+	let raw = isize::deserialize(deserializer)?;
 	Ok(raw != 0)
+}
+
+/// A custom deserializer that maps an `f32` value to `None` if it's `0.0`.
+///
+/// This is because `f32` segments submitted before a field was added default to
+/// `0.0`.
+pub(crate) fn none_on_0_0_from_str<'de, D>(deserializer: D) -> StdResult<Option<f32>, D::Error>
+where
+	D: Deserializer<'de>,
+{
+	let raw = f32::deserialize(deserializer)?;
+	Ok(if raw == 0.0 { None } else { Some(raw) })
 }
 
 /// A custom deserializer that maps a [`HashMap`]'s keys using an arbitrary

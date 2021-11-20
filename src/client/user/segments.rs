@@ -10,7 +10,7 @@ use crate::{
 	api::convert_category_bitflags_to_url,
 	error::{Result, SponsorBlockError},
 	segment::{AcceptedCategories, ActionableSegmentKind, Segment},
-	util::{bool_from_integer_str, get_response_text, to_url_array},
+	util::{bool_from_integer_str, get_response_text, none_on_0_0_from_str, to_url_array},
 	Action,
 	AdditionalSegmentInfo,
 	Client,
@@ -46,8 +46,8 @@ struct RawSegment {
 	#[serde(deserialize_with = "bool_from_integer_str")]
 	locked: bool,
 	votes: i32,
-	#[serde(rename = "videoDuration")]
-	video_duration_upon_submission: f32,
+	#[serde(rename = "videoDuration", deserialize_with = "none_on_0_0_from_str")]
+	video_duration_upon_submission: Option<f32>,
 	#[serde(flatten)]
 	additional_info: AdditionalSegmentInfo,
 }

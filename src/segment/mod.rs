@@ -40,7 +40,13 @@ pub struct Segment {
 	pub votes: i32,
 	/// The video duration upon submission of the segment. Used to determine if
 	/// the segment is out of date.
-	pub video_duration_on_submission: f32,
+	///
+	/// It's an [`Option`] because segments submitted before video duration was
+	/// tracked don't have this value.
+	///
+	/// If [`None`], it doesn't immediately mean the segment is out of date,
+	/// just that the segment is old.
+	pub video_duration_on_submission: Option<f32>,
 	/// Additional segment information that isn't always provided by the API,
 	/// depending on the function.
 	///
