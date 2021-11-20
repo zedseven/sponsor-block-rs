@@ -10,7 +10,11 @@ use crate::{
 	api::convert_category_bitflags_to_url,
 	error::{Result, SponsorBlockError},
 	segment::{AcceptedCategories, ActionableSegmentKind, Segment},
-	util::{bool_from_integer_str, get_response_text, none_on_0_0_from_str, to_url_array},
+	util::{
+		de::{bool_from_integer_str, none_on_0_0_from_str},
+		get_response_text,
+		to_url_array,
+	},
 	Action,
 	AdditionalSegmentInfo,
 	Client,

@@ -9,7 +9,7 @@ use serde::{de::Error, Deserialize, Deserializer};
 
 use crate::{
 	api::{convert_to_action_type, convert_to_segment_kind},
-	util::bool_from_integer_str,
+	util::de::bool_from_integer_str,
 	Client,
 	PublicUserId,
 	Result,
@@ -121,14 +121,14 @@ impl Default for AdditionalSegmentInfo {
 	fn default() -> Self {
 		Self {
 			video_id: VideoId::default(),
-			incorrect_votes: Default::default(),
+			incorrect_votes: u32::default(),
 			submitter_id: PublicUserId::default(),
 			time_submitted: Utc::now(), // Not great, but this should in theory never be called
-			views: Default::default(),
+			views: u32::default(),
 			service: String::default(),
-			hidden: Default::default(),
-			submitter_reputation: Default::default(),
-			shadow_banned: Default::default(),
+			hidden: bool::default(),
+			submitter_reputation: f32::default(),
+			shadow_banned: bool::default(),
 			submitter_user_agent: String::default(),
 		}
 	}

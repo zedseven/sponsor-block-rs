@@ -7,7 +7,7 @@ use serde_json::from_str as from_json_str;
 use crate::{
 	api::{convert_to_action_type, convert_to_segment_kind},
 	error::Result,
-	util::{get_response_text, map_hashmap_key_from_str},
+	util::{de::map_hashmap_key_from_str, get_response_text},
 	Action,
 	ActionableSegmentKind,
 	Client,

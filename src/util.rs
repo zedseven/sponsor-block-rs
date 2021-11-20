@@ -2,10 +2,9 @@
 //! with the process.
 
 // Uses
-use std::{collections::HashMap, fmt::Write, hash::Hash, result::Result as StdResult};
+use std::fmt::Write;
 
 use reqwest::Response;
-use serde::{Deserialize, Deserializer};
 
 use crate::error::{Result, SponsorBlockError};
 
@@ -77,55 +76,87 @@ pub(crate) fn bytes_to_hex_string(bytes: &[u8]) -> String {
 	result
 }
 
-/// A custom deserializer that maps an integer to a boolean value based on
-/// whether it equals `0`.
-///
-/// Many API fields that are boolean in nature use an integer representation,
-/// which is why.
-pub(crate) fn bool_from_integer_str<'de, D>(deserializer: D) -> StdResult<bool, D::Error>
-where
-	D: Deserializer<'de>,
-{
-	let raw = isize::deserialize(deserializer)?;
-	Ok(raw != 0)
-}
+/// For all deserialization helper functions.
+pub(crate) mod de {
+	// Uses
+	use core::time::Duration;
+	use std::{collections::HashMap, hash::Hash, result::Result as StdResult};
 
-/// A custom deserializer that maps an `f32` value to `None` if it's `0.0`.
-///
-/// This is because `f32` segments submitted before a field was added default to
-/// `0.0`.
-pub(crate) fn none_on_0_0_from_str<'de, D>(deserializer: D) -> StdResult<Option<f32>, D::Error>
-where
-	D: Deserializer<'de>,
-{
-	let raw = f32::deserialize(deserializer)?;
-	Ok(if raw == 0.0 { None } else { Some(raw) })
-}
+	use serde::{Deserialize, Deserializer};
 
-/// A custom deserializer that maps a [`HashMap`]'s keys using an arbitrary
-/// function.
-///
-/// Failed conversions are silently dropped. This is so an existing version of
-/// the library can remain functional if new keys are added to the API.
-///
-/// This cannot be used directly with [`serde`] - a wrapper deserializer is
-/// required for each type mapping, specifying the conversion function to use.
-pub(crate) fn map_hashmap_key_from_str<'de, D, T, O, C, E>(
-	deserializer: D,
-	convert_func: C,
-) -> StdResult<HashMap<T, O>, D::Error>
-where
-	D: Deserializer<'de>,
-	T: Hash + Eq,
-	O: Deserialize<'de>,
-	C: Fn(&str) -> StdResult<T, E>,
-{
-	let raw: HashMap<&str, O> = HashMap::deserialize(deserializer)?;
-	Ok(raw
-		.into_iter()
-		.flat_map(|e| {
-			let convert_result: StdResult<(T, O), E> = Ok((convert_func(e.0)?, e.1));
-			convert_result
-		})
-		.collect())
+	/// A custom deserializer that maps an integer to a boolean value based on
+	/// whether it equals `0`.
+	///
+	/// Many API fields that are boolean in nature use an integer
+	/// representation, which is why.
+	pub(crate) fn bool_from_integer_str<'de, D>(deserializer: D) -> StdResult<bool, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
+		let raw = isize::deserialize(deserializer)?;
+		Ok(raw != 0)
+	}
+
+	/// A custom deserializer that maps an `f32` value to `None` if it's `0.0`.
+	///
+	/// This is because `f32` segments submitted before a field was added
+	/// default to `0.0`.
+	pub(crate) fn none_on_0_0_from_str<'de, D>(deserializer: D) -> StdResult<Option<f32>, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
+		let raw = f32::deserialize(deserializer)?;
+		Ok(if raw == 0.0 { None } else { Some(raw) })
+	}
+
+	/// A custom deserializer that maps a [`HashMap`]'s keys using an arbitrary
+	/// function.
+	///
+	/// Failed conversions are silently dropped. This is so an existing version
+	/// of the library can remain functional if new keys are added to the API.
+	///
+	/// This cannot be used directly with [`serde`] - a wrapper deserializer is
+	/// required for each type mapping, specifying the conversion function to
+	/// use.
+	pub(crate) fn map_hashmap_key_from_str<'de, D, T, O, C, E>(
+		deserializer: D,
+		convert_func: C,
+	) -> StdResult<HashMap<T, O>, D::Error>
+	where
+		D: Deserializer<'de>,
+		T: Hash + Eq,
+		O: Deserialize<'de>,
+		C: Fn(&str) -> StdResult<T, E>,
+	{
+		let raw: HashMap<&str, O> = HashMap::deserialize(deserializer)?;
+		Ok(raw
+			.into_iter()
+			.flat_map(|e| {
+				let convert_result: StdResult<(T, O), E> = Ok((convert_func(e.0)?, e.1));
+				convert_result
+			})
+			.collect())
+	}
+
+	/// A custom deserializer that converts an amount of milliseconds in string
+	/// format to a [`Duration`].
+	pub(crate) fn duration_from_millis_str<'de, D>(deserializer: D) -> StdResult<Duration, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
+		let raw = u64::deserialize(deserializer)?;
+		Ok(Duration::from_millis(raw))
+	}
+
+	/// A custom deserializer that converts an amount of seconds in string
+	/// format to a [`Duration`].
+	pub(crate) fn duration_from_seconds_str<'de, D>(
+		deserializer: D,
+	) -> StdResult<Duration, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
+		let raw = f32::deserialize(deserializer)?;
+		Ok(Duration::from_secs_f32(raw))
+	}
 }

@@ -1,28 +1,37 @@
 // Uses
+use core::time::Duration;
+
+use chrono::{serde::ts_milliseconds, DateTime, Utc};
 use serde::Deserialize;
 use serde_json::from_str as from_json_str;
 
-use crate::{error::Result, util::get_response_text, Client};
+use crate::{
+	error::Result,
+	util::{
+		de::{duration_from_millis_str, duration_from_seconds_str},
+		get_response_text,
+	},
+	Client,
+};
 
 /// The results of an API status request.
-#[derive(Deserialize, Debug, Default)]
+#[derive(Deserialize, Debug)]
 #[serde(default)]
 pub struct ApiStatus {
-	/// The server uptime in seconds.
-	#[serde(rename = "uptime")]
-	pub up_time: f32,
+	/// The server process uptime.
+	#[serde(deserialize_with = "duration_from_seconds_str")]
+	pub uptime: Duration,
 	/// The SHA hash of the most recent commit the server is running.
 	pub commit: String,
 	/// The version of the database.
 	#[serde(rename = "db")]
 	pub db_version: u32,
-	/// The time in milliseconds of when the request was received, since the
-	/// Unix epoch.
-	#[serde(rename = "startTime")]
-	pub request_start_time: u64,
-	/// The time in milliseconds that it took the API to send it's reply.
-	#[serde(rename = "processTime")]
-	pub request_time_taken: u32,
+	/// The date and time when the request was received.
+	#[serde(rename = "startTime", with = "ts_milliseconds")]
+	pub request_start_time: DateTime<Utc>,
+	/// The time that it took the API to send it's reply.
+	#[serde(rename = "processTime", deserialize_with = "duration_from_millis_str")]
+	pub request_time_taken: Duration,
 	/// The load average for the server. The first entry is the average for 5
 	/// minutes, and the second is for 15 minutes.
 	///
@@ -30,6 +39,19 @@ pub struct ApiStatus {
 	/// <https://github.com/ajayyy/SponsorBlockServer/blob/06af78c770b82722be8b03d2b1b82eb7409f675b/src/routes/getStatus.ts#L18>
 	#[serde(rename = "loadavg")]
 	pub load_average: [f32; 2],
+}
+
+impl Default for ApiStatus {
+	fn default() -> Self {
+		Self {
+			uptime: Duration::default(),
+			commit: String::default(),
+			db_version: u32::default(),
+			request_start_time: Utc::now(),
+			request_time_taken: Duration::default(),
+			load_average: Default::default(),
+		}
+	}
 }
 
 // Function Implementation
