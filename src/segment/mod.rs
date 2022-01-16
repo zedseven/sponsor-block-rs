@@ -75,6 +75,7 @@ impl Segment {
 	///
 	/// [`additional_info`]: Self::additional_info
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
+	#[cfg(feature = "user")]
 	pub async fn fetch_additional_info(&mut self, client: &Client) -> Result<bool> {
 		if self.additional_info.is_some() {
 			return Ok(false);
