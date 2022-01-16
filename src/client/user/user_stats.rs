@@ -18,6 +18,7 @@ use crate::{
 
 /// The results of a user info request.
 #[derive(Deserialize, Debug, Default)]
+#[non_exhaustive]
 #[serde(default, rename_all = "camelCase")]
 pub struct UserStats {
 	/// The user's public user ID.
@@ -53,6 +54,7 @@ fn map_action_types<'de, D: Deserializer<'de>, O: Deserialize<'de>>(
 ///
 /// [`UserInfo`]: super::user_info::UserInfo
 #[derive(Deserialize, Debug, Default)]
+#[non_exhaustive]
 #[serde(default, rename_all = "camelCase")]
 pub struct OverallStats {
 	/// The number of minutes this user has saved other users.

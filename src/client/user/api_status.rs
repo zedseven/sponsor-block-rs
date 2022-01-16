@@ -16,6 +16,7 @@ use crate::{
 
 /// The results of an API status request.
 #[derive(Deserialize, Debug)]
+#[non_exhaustive]
 #[serde(default)]
 pub struct ApiStatus {
 	/// The server process uptime.

@@ -1,5 +1,8 @@
 //! Everything to do with segments.
 
+// Because EnumKind doesn't implement `#[non_exhaustive]`
+#![allow(clippy::exhaustive_enums)]
+
 // Uses
 use std::result::Result as StdResult;
 
@@ -26,6 +29,7 @@ pub use self::category::*;
 /// A segment, representing a section or point in time in a video that is worth
 /// skipping or otherwise treating specially.
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct Segment {
 	/// The section with timestamp values to act upon.
 	pub segment: ActionableSegment,
@@ -88,6 +92,7 @@ impl Segment {
 /// Whether or not a function supplies this information will be
 /// noted in its documentation.
 #[derive(Deserialize, Debug)]
+#[non_exhaustive]
 #[serde(default, rename_all = "camelCase")]
 pub struct AdditionalSegmentInfo {
 	/// The video ID associated with the segment.
@@ -139,6 +144,7 @@ impl Default for AdditionalSegmentInfo {
 /// This is declared for segments upon submission, and basically just recommends
 /// whether to mute or skip the entire section.
 #[derive(Debug, Hash, Eq, PartialEq)]
+#[non_exhaustive]
 pub enum Action {
 	/// Skip the segment.
 	Skip,
@@ -163,6 +169,7 @@ impl Default for Action {
 ///
 /// For segment types, visit: <https://wiki.sponsor.ajay.app/w/Segment_Categories>
 #[derive(EnumKind, Debug)]
+#[non_exhaustive]
 #[enum_kind(ActionableSegmentKind, derive(Hash))]
 pub enum ActionableSegment {
 	/// Sponsor
@@ -285,6 +292,7 @@ impl Default for ActionableSegmentKind {
 ///
 /// `start` is guaranteed to be <= `end`.
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct TimeSection {
 	/// The start point of the section.
 	pub start: f32,
@@ -302,6 +310,7 @@ impl TimeSection {
 
 /// A singular point in the video, category-agnostic.
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct TimePoint {
 	/// The singular point in time.
 	pub point: f32,

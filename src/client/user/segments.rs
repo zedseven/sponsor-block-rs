@@ -108,11 +108,7 @@ impl RawSegment {
 			locked: self.locked,
 			votes: self.votes,
 			video_duration_on_submission: self.video_duration_upon_submission,
-			additional_info: if additional_info {
-				Some(self.additional_info)
-			} else {
-				None
-			},
+			additional_info: additional_info.then(|| self.additional_info),
 		})
 	}
 }

@@ -14,6 +14,7 @@ use crate::{
 
 /// The results of a user info request.
 #[derive(Deserialize, Debug, Default)]
+#[non_exhaustive]
 #[serde(default, rename_all = "camelCase")]
 pub struct UserInfo {
 	/// The user's public user ID.

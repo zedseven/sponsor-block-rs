@@ -79,8 +79,12 @@ pub struct ClientBuilder {
 }
 
 impl ClientBuilder {
-	/// The default API URL to use.
-	pub const DEFAULT_BASE_URL: &'static str = "https://sponsor.ajay.app/api";
+	/// The base URL for the official SponsorBlock API.
+	///
+	/// This is the default value.
+	pub const BASE_URL_MAIN: &'static str = "https://sponsor.ajay.app/api";
+	/// The base URL for the SponsorBlock testing database.
+	pub const BASE_URL_TESTING: &'static str = "https://sponsor.ajay.app/test/api";
 	/// The default hash prefix length.
 	#[cfg(feature = "private_searches")]
 	pub const DEFAULT_HASH_PREFIX_LENGTH: u8 = 4;
@@ -97,7 +101,7 @@ impl ClientBuilder {
 		Self {
 			user_agent: Self::DEFAULT_USER_AGENT.to_owned(),
 			user_id: user_id.into(),
-			base_url: Self::DEFAULT_BASE_URL.to_owned(),
+			base_url: Self::BASE_URL_MAIN.to_owned(),
 			#[cfg(feature = "private_searches")]
 			hash_prefix_length: Self::DEFAULT_HASH_PREFIX_LENGTH,
 			service: Self::DEFAULT_SERVICE.to_owned(),
@@ -127,6 +131,10 @@ impl ClientBuilder {
 	///
 	/// You should only have to change this if working with a different instance
 	/// of the SponsorBlock database.
+	///
+	/// The default value is [`BASE_URL_MAIN`].
+	///
+	/// [`BASE_URL_MAIN`]: Self::BASE_URL_MAIN
 	pub fn base_url(&mut self, base_url: &str) -> &mut Self {
 		self.base_url = base_url.trim_end_matches('/').to_owned();
 		self
