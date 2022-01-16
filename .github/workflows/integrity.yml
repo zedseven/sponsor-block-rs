@@ -49,16 +49,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Restore cache
-        uses: actions/cache@v2
+      - name: Install `nightly` toolchain # So we can use newer lints
+        uses: actions-rs/toolchain@v1
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ matrix.features[0] }}-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          toolchain: nightly
+          profile: minimal
+          components: clippy
+          override: true
+
+      - name: Restore cache
+        uses: Swatinem/rust-cache@v1
 
       - name: Cargo Clippy
         uses: actions-rs/cargo@v1
