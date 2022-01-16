@@ -151,6 +151,8 @@ pub enum Action {
 	Skip,
 	/// Mute the segment without skipping.
 	Mute,
+	/// The segment applies to the entire video.
+	Full,
 }
 
 impl<'de> Deserialize<'de> for Action {
@@ -224,6 +226,13 @@ pub enum ActionableSegment {
 	/// Tangential scenes added only for filler or humor that are not required
 	/// to understand the main content of the video.
 	FillerTangent(TimeSection),
+
+	/// Exclusive Access
+	///
+	/// Only used when the creator showcases a product, service or location that
+	/// they've received free or subsidised access to in the video that cannot
+	/// be completely removed by cuts.
+	ExclusiveAccess,
 }
 
 impl ActionableSegmentKind {
@@ -272,6 +281,7 @@ impl ActionableSegmentKind {
 				start: time_points[0],
 				end: time_points[1],
 			}),
+			ActionableSegmentKind::ExclusiveAccess => ActionableSegment::ExclusiveAccess,
 		}
 	}
 }

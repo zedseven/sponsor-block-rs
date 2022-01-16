@@ -20,10 +20,12 @@ const ENDCARDS_CREDITS_NAME: &str = "outro";
 const PREVIEW_RECAP_NAME: &str = "preview";
 const NON_MUSIC_NAME: &str = "music_offtopic";
 const FILLER_TANGENT_NAME: &str = "filler";
+const EXCLUSIVE_ACCESS_NAME: &str = "exclusive_access";
 
 // The API names for actions
 const ACTION_SKIP_NAME: &str = "skip";
 const ACTION_MUTE_NAME: &str = "mute";
+const ACTION_FULL_NAME: &str = "full";
 
 /// A value received from the API is not recognized.
 ///
@@ -53,6 +55,7 @@ pub(crate) fn convert_to_segment_kind(
 		PREVIEW_RECAP_NAME => Ok(ActionableSegmentKind::PreviewRecap),
 		NON_MUSIC_NAME => Ok(ActionableSegmentKind::NonMusic),
 		FILLER_TANGENT_NAME => Ok(ActionableSegmentKind::FillerTangent),
+		EXCLUSIVE_ACCESS_NAME => Ok(ActionableSegmentKind::ExclusiveAccess),
 		unknown_value => Err(UnknownValueError {
 			r#type: "category".to_owned(),
 			value: unknown_value.to_owned(),
@@ -64,6 +67,7 @@ pub(crate) fn convert_to_action_type(action_type: &str) -> Result<Action, Unknow
 	match action_type {
 		ACTION_SKIP_NAME => Ok(Action::Skip),
 		ACTION_MUTE_NAME => Ok(Action::Mute),
+		ACTION_FULL_NAME => Ok(Action::Full),
 		unknown_value => Err(UnknownValueError {
 			r#type: "actionType".to_owned(),
 			value: unknown_value.to_owned(),
@@ -92,6 +96,7 @@ pub(crate) fn convert_category_bitflags_to_url(accepted_categories: AcceptedCate
 		(AcceptedCategories::PREVIEW_RECAP, PREVIEW_RECAP_NAME),
 		(AcceptedCategories::NON_MUSIC, NON_MUSIC_NAME),
 		(AcceptedCategories::FILLER_TANGENT, FILLER_TANGENT_NAME),
+		(AcceptedCategories::EXCLUSIVE_ACCESS, EXCLUSIVE_ACCESS_NAME),
 	];
 
 	to_url_array_conditional_convert(

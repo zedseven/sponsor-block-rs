@@ -26,6 +26,8 @@ bitflags! {
 		const NON_MUSIC = 0b0000_1000_0000;
 		/// Filler Tangent - take a look at [`crate::ActionableSegment::FillerTangent`] for more information.
 		const FILLER_TANGENT = 0b0001_0000_0000;
+		/// Exclusive Access - take a look at [`crate::ActionableSegment::ExclusiveAccess`] for more information.
+		const EXCLUSIVE_ACCESS = 0b0010_0000_0000;
 	}
 }
 
