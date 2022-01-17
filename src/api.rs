@@ -5,6 +5,7 @@ use thiserror::Error;
 
 use crate::{
 	util::to_url_array_conditional_convert,
+	AcceptedActions,
 	AcceptedCategories,
 	Action,
 	ActionableSegmentKind,
@@ -67,7 +68,7 @@ pub(crate) fn convert_to_action_type(action_type: &str) -> Result<Action, Unknow
 	match action_type {
 		ACTION_SKIP_NAME => Ok(Action::Skip),
 		ACTION_MUTE_NAME => Ok(Action::Mute),
-		ACTION_FULL_NAME => Ok(Action::Full),
+		ACTION_FULL_NAME => Ok(Action::FullVideo),
 		unknown_value => Err(UnknownValueError {
 			r#type: "actionType".to_owned(),
 			value: unknown_value.to_owned(),
@@ -102,6 +103,21 @@ pub(crate) fn convert_category_bitflags_to_url(accepted_categories: AcceptedCate
 	to_url_array_conditional_convert(
 		CATEGORY_PAIRS,
 		|&(flag, _)| accepted_categories.contains(flag),
+		|&(_, name)| name,
+	)
+}
+
+pub(crate) fn convert_action_bitflags_to_url(accepted_actions: AcceptedActions) -> String {
+	/// Maps action types to their API names according to https://github.com/ajayyy/SponsorBlock/wiki/Types
+	const ACTION_PAIRS: &[(AcceptedActions, &str)] = &[
+		(AcceptedActions::SKIP, ACTION_SKIP_NAME),
+		(AcceptedActions::MUTE, ACTION_MUTE_NAME),
+		(AcceptedActions::FULL, ACTION_FULL_NAME),
+	];
+
+	to_url_array_conditional_convert(
+		ACTION_PAIRS,
+		|&(flag, _)| accepted_actions.contains(flag),
 		|&(_, name)| name,
 	)
 }

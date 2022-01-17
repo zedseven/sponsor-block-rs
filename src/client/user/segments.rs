@@ -7,7 +7,7 @@ use sha2::{Digest, Sha256};
 #[cfg(feature = "private_searches")]
 use crate::util::bytes_to_hex_string;
 use crate::{
-	api::convert_category_bitflags_to_url,
+	api::{convert_action_bitflags_to_url, convert_category_bitflags_to_url},
 	error::{Result, SponsorBlockError},
 	segment::{AcceptedCategories, ActionableSegmentKind, Segment},
 	util::{
@@ -15,6 +15,7 @@ use crate::{
 		get_response_text,
 		to_url_array,
 	},
+	AcceptedActions,
 	Action,
 	AdditionalSegmentInfo,
 	Client,
@@ -135,9 +136,15 @@ impl Client {
 		&self,
 		video_id: &VideoIdSlice,
 		accepted_categories: AcceptedCategories,
+		accepted_actions: AcceptedActions,
 	) -> Result<Vec<Segment>> {
-		self.fetch_segments_with_required::<&SegmentUuidSlice>(video_id, accepted_categories, &[])
-			.await
+		self.fetch_segments_with_required::<&SegmentUuidSlice>(
+			video_id,
+			accepted_categories,
+			accepted_actions,
+			&[],
+		)
+		.await
 	}
 
 	/// Fetches the segments for a given video ID.
@@ -157,6 +164,7 @@ impl Client {
 		&self,
 		video_id: &VideoIdSlice,
 		accepted_categories: AcceptedCategories,
+		accepted_actions: AcceptedActions,
 		required_segments: &[S],
 	) -> Result<Vec<Segment>> {
 		// Function Constants
@@ -190,6 +198,10 @@ impl Client {
 			.query(&[(
 				"categories",
 				convert_category_bitflags_to_url(accepted_categories),
+			)])
+			.query(&[(
+				"actionTypes",
+				convert_action_bitflags_to_url(accepted_actions),
 			)])
 			.query(&[("service", &self.service)]);
 		if !required_segments.is_empty() {

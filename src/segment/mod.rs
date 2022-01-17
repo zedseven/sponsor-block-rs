@@ -11,7 +11,7 @@ use enum_kinds::EnumKind;
 use serde::{de::Error, Deserialize, Deserializer};
 
 use crate::{
-	api::{convert_to_action_type, convert_to_segment_kind},
+	api::convert_to_segment_kind,
 	util::de::bool_from_integer_str,
 	Client,
 	PublicUserId,
@@ -21,10 +21,11 @@ use crate::{
 };
 
 // Modules
+mod action;
 mod category;
 
 // Public Exports
-pub use self::category::*;
+pub use self::{action::*, category::*};
 
 /// A segment, representing a section or point in time in a video that is worth
 /// skipping or otherwise treating specially.
@@ -33,8 +34,7 @@ pub use self::category::*;
 pub struct Segment {
 	/// The section with timestamp values to act upon.
 	pub segment: ActionableSegment,
-	/// What action the submitter recommended to take on the segment.
-	/// (skip/mute)
+	/// What action the submitter recommended to take for the segment.
 	pub action_type: Action,
 	/// The UUID of the segment submitter.
 	pub uuid: SegmentUuid,
@@ -137,34 +137,6 @@ impl Default for AdditionalSegmentInfo {
 			shadow_banned: bool::default(),
 			submitter_user_agent: String::default(),
 		}
-	}
-}
-
-/// The action to take on a segment.
-///
-/// This is declared for segments upon submission, and basically just recommends
-/// whether to mute or skip the entire section.
-#[derive(Debug, Hash, Eq, PartialEq)]
-#[non_exhaustive]
-pub enum Action {
-	/// Skip the segment.
-	Skip,
-	/// Mute the segment without skipping.
-	Mute,
-	/// The segment applies to the entire video.
-	Full,
-}
-
-impl<'de> Deserialize<'de> for Action {
-	fn deserialize<D: Deserializer<'de>>(deserializer: D) -> StdResult<Self, D::Error> {
-		let action_string = String::deserialize(deserializer)?;
-		convert_to_action_type(action_string.as_str()).map_err(D::Error::custom)
-	}
-}
-
-impl Default for Action {
-	fn default() -> Self {
-		Self::Skip
 	}
 }
 
