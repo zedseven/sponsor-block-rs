@@ -54,7 +54,7 @@ bitflags! {
 		/// Mute - take a look at [`crate::Action::Mute`] for more information.
 		const MUTE = 0b0010;
 		/// Full Video - take a look at [`crate::Action::FullVideo`] for more information.
-		const FULL = 0b0100;
+		const FULL_VIDEO = 0b0100;
 	}
 }
 

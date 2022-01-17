@@ -112,7 +112,7 @@ pub(crate) fn convert_action_bitflags_to_url(accepted_actions: AcceptedActions) 
 	const ACTION_PAIRS: &[(AcceptedActions, &str)] = &[
 		(AcceptedActions::SKIP, ACTION_SKIP_NAME),
 		(AcceptedActions::MUTE, ACTION_MUTE_NAME),
-		(AcceptedActions::FULL, ACTION_FULL_NAME),
+		(AcceptedActions::FULL_VIDEO, ACTION_FULL_NAME),
 	];
 
 	to_url_array_conditional_convert(
