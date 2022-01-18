@@ -35,12 +35,12 @@ jobs:
       fail-fast: false
       matrix:
         features:
-          - 'user,private_searches'
-          - 'user,vip,private_searches,gen_user_id'
-          - 'user,gen_user_id'
-          - 'user,vip'
-          - 'vip'
-          - '""'
+          - [ default, 'user,private_searches' ]
+          - [ all, 'user,vip,private_searches,gen_user_id' ]
+          - [ gen_user_id, 'user,gen_user_id' ]
+          - [ user_and_vip, 'user,vip' ]
+          - [ vip, 'vip' ]
+          - [ none, '""' ]
         os:
           - windows-latest
           - ubuntu-latest
@@ -59,9 +59,11 @@ jobs:
 
       - name: Restore cache
         uses: Swatinem/rust-cache@v1
+        with:
+          key: ${{ matrix.features[0] }}
 
       - name: Cargo Clippy
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --no-default-features --features ${{ matrix.features }} -- -D warnings -A unused
+          args: --no-default-features --features ${{ matrix.features[1] }} -- -D warnings -A unused
