@@ -22,7 +22,7 @@ pub struct ApiStatus {
 	/// The server process uptime.
 	#[serde(deserialize_with = "duration_from_seconds_str")]
 	pub uptime: Duration,
-	/// The SHA hash of the most recent commit the server is running.
+	/// The SHA-1 hash of the most recent commit the server is running.
 	pub commit: String,
 	/// The version of the database.
 	#[serde(rename = "db")]
