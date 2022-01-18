@@ -7,9 +7,8 @@ mod user;
 mod vip;
 
 // Uses
-use core::time::Duration;
-
 use reqwest::{Client as ReqwestClient, ClientBuilder as ReqwestClientBuilder};
+use time::Duration;
 
 // Public Exports
 #[cfg(feature = "user")]
@@ -110,11 +109,21 @@ impl ClientBuilder {
 	}
 
 	/// Builds the struct into an instance of [`Client`].
+	///
+	/// # Panics
+	/// - If the underlying HTTP client fails to build for some reason.
+	/// - If the timeout is of a value that is incompatible with the std
+	///   library.
+	///
+	/// If either happens, please open an issue.
 	#[must_use]
 	pub fn build(&self) -> Client {
 		let mut http = ReqwestClientBuilder::new().user_agent(self.user_agent.clone());
 		if let Some(timeout) = self.timeout {
-			http = http.timeout(timeout);
+			http = http.timeout(timeout.try_into().expect(
+				"the Duration value provided for the HTTP timeout is incompatible with the std \
+				 library implementation",
+			));
 		}
 		Client {
 			http: http.build().expect("unable to build the HTTP client"),
@@ -170,8 +179,27 @@ impl ClientBuilder {
 	/// response body has finished.
 	///
 	/// The default is no timeout.
-	pub fn timeout(&mut self, timeout: Duration) -> &mut Self {
-		self.timeout = Some(timeout);
+	///
+	/// # Panics
+	/// Panics if not in the range `duration > 0`.
+	pub fn timeout(&mut self, duration: Duration) -> &mut Self {
+		assert!(duration.is_positive());
+
+		self.timeout = Some(duration);
+		self
+	}
+
+	/// Sets the HTTP request timeout, in milliseconds.
+	///
+	/// The timeout is applied from when the request starts connecting until the
+	/// response body has finished.
+	///
+	/// The default is no timeout.
+	///
+	/// # Panics
+	/// Panics if not in the range `millis > 0`.
+	pub fn timeout_millis(&mut self, millis: i64) -> &mut Self {
+		self.timeout(Duration::milliseconds(millis));
 		self
 	}
 }

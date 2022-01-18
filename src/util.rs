@@ -79,10 +79,10 @@ pub(crate) fn bytes_to_hex_string(bytes: &[u8]) -> String {
 /// For all deserialization helper functions.
 pub(crate) mod de {
 	// Uses
-	use core::time::Duration;
 	use std::{collections::HashMap, hash::Hash, result::Result as StdResult};
 
-	use serde::{Deserialize, Deserializer};
+	use serde::{de::Error, Deserialize, Deserializer};
+	use time::{Duration, OffsetDateTime};
 
 	/// A custom deserializer that maps an integer to a boolean value based on
 	/// whether it equals `0`.
@@ -144,8 +144,8 @@ pub(crate) mod de {
 	where
 		D: Deserializer<'de>,
 	{
-		let raw = u64::deserialize(deserializer)?;
-		Ok(Duration::from_millis(raw))
+		let raw = i64::deserialize(deserializer)?;
+		Ok(Duration::milliseconds(raw))
 	}
 
 	/// A custom deserializer that converts an amount of seconds in string
@@ -157,6 +157,20 @@ pub(crate) mod de {
 		D: Deserializer<'de>,
 	{
 		let raw = f32::deserialize(deserializer)?;
-		Ok(Duration::from_secs_f32(raw))
+		Ok(Duration::seconds_f32(raw))
+	}
+
+	/// A custom deserializer that converts a millisecond Unix timestamp format
+	/// to an [`OffsetDateTime`].
+	pub(crate) fn datetime_from_millis_timestamp<'de, D>(
+		deserializer: D,
+	) -> StdResult<OffsetDateTime, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
+		const NANOSECONDS_PER_MILLISECOND: i128 = 1_000_000;
+		let raw = i64::deserialize(deserializer)?;
+		OffsetDateTime::from_unix_timestamp_nanos(i128::from(raw) * NANOSECONDS_PER_MILLISECOND)
+			.map_err(D::Error::custom)
 	}
 }

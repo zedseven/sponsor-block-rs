@@ -6,13 +6,13 @@
 // Uses
 use std::result::Result as StdResult;
 
-use chrono::{serde::ts_milliseconds, DateTime, Utc};
 use enum_kinds::EnumKind;
 use serde::{de::Error, Deserialize, Deserializer};
+use time::OffsetDateTime;
 
 use crate::{
 	api::convert_to_segment_kind,
-	util::de::bool_from_integer_str,
+	util::de::{bool_from_integer_str, datetime_from_millis_timestamp},
 	Client,
 	PublicUserId,
 	Result,
@@ -105,8 +105,8 @@ pub struct AdditionalSegmentInfo {
 	#[serde(rename = "userID")]
 	pub submitter_id: PublicUserId,
 	/// The date and time that the segment was submitted.
-	#[serde(with = "ts_milliseconds")]
-	pub time_submitted: DateTime<Utc>,
+	#[serde(deserialize_with = "datetime_from_millis_timestamp")]
+	pub time_submitted: OffsetDateTime,
 	/// The number of views the segment has.
 	pub views: u32,
 	/// The service the segment is associated with.
@@ -129,7 +129,8 @@ impl Default for AdditionalSegmentInfo {
 			video_id: VideoId::default(),
 			incorrect_votes: u32::default(),
 			submitter_id: PublicUserId::default(),
-			time_submitted: Utc::now(), // Not great, but this should in theory never be called
+			time_submitted: OffsetDateTime::UNIX_EPOCH, /* Not great, but this should in theory
+			                                             * never be called */
 			views: u32::default(),
 			service: String::default(),
 			hidden: bool::default(),

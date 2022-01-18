@@ -1,14 +1,12 @@
 // Uses
-use core::time::Duration;
-
-use chrono::{serde::ts_milliseconds, DateTime, Utc};
 use serde::Deserialize;
 use serde_json::from_str as from_json_str;
+use time::{Duration, OffsetDateTime};
 
 use crate::{
 	error::Result,
 	util::{
-		de::{duration_from_millis_str, duration_from_seconds_str},
+		de::{datetime_from_millis_timestamp, duration_from_millis_str, duration_from_seconds_str},
 		get_response_text,
 	},
 	Client,
@@ -28,8 +26,11 @@ pub struct ApiStatus {
 	#[serde(rename = "db")]
 	pub db_version: u32,
 	/// The date and time when the request was received.
-	#[serde(rename = "startTime", with = "ts_milliseconds")]
-	pub request_start_time: DateTime<Utc>,
+	#[serde(
+		rename = "startTime",
+		deserialize_with = "datetime_from_millis_timestamp"
+	)]
+	pub request_start_time: OffsetDateTime,
 	/// The time that it took the API to send it's reply.
 	#[serde(rename = "processTime", deserialize_with = "duration_from_millis_str")]
 	pub request_time_taken: Duration,
@@ -48,7 +49,7 @@ impl Default for ApiStatus {
 			uptime: Duration::default(),
 			commit: String::default(),
 			db_version: u32::default(),
-			request_start_time: Utc::now(),
+			request_start_time: OffsetDateTime::UNIX_EPOCH,
 			request_time_taken: Duration::default(),
 			load_average: Default::default(),
 		}
