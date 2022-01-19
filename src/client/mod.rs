@@ -64,6 +64,7 @@ impl Client {
 }
 
 /// The builder for the [`Client`].
+#[derive(Clone)]
 pub struct ClientBuilder {
 	// Internal
 	user_agent: String,
@@ -81,17 +82,39 @@ impl ClientBuilder {
 	/// The base URL for the official SponsorBlock API.
 	///
 	/// This is the default value.
+	///
+	/// See [`base_url`] for more information.
+	///
+	/// [`base_url`]: Self::base_url
 	pub const BASE_URL_MAIN: &'static str = "https://sponsor.ajay.app/api";
 	/// The base URL for the SponsorBlock testing database.
+	///
+	/// See [`base_url`] for more information.
+	///
+	/// [`base_url`]: Self::base_url
 	pub const BASE_URL_TESTING: &'static str = "https://sponsor.ajay.app/test/api";
 	/// The default hash prefix length.
+	///
+	/// See [`hash_prefix_length`] for more information.
+	///
+	/// [`hash_prefix_length`]: Self::hash_prefix_length
 	#[cfg(feature = "private_searches")]
 	pub const DEFAULT_HASH_PREFIX_LENGTH: u8 = 4;
 	/// The default service value to use.
+	///
+	/// See [`service`] for more information.
+	///
+	/// [`service`]: Self::service
 	pub const DEFAULT_SERVICE: &'static str = "YouTube";
 	/// The user agent used by the library for requests to the API.
 	pub const DEFAULT_USER_AGENT: &'static str =
 		concat!(env!("CARGO_PKG_NAME"), "-rs/", env!("CARGO_PKG_VERSION"));
+	/// The default HTTP request timeout.
+	///
+	/// See [`timeout`] for more information.
+	///
+	/// [`timeout`]: Self::timeout
+	pub const DEFAULT_TIMEOUT: Duration = Duration::seconds(5);
 
 	/// Creates a new instance of the struct, with default values for all
 	/// configuration.
@@ -104,7 +127,7 @@ impl ClientBuilder {
 			#[cfg(feature = "private_searches")]
 			hash_prefix_length: Self::DEFAULT_HASH_PREFIX_LENGTH,
 			service: Self::DEFAULT_SERVICE.to_owned(),
-			timeout: None,
+			timeout: Some(Self::DEFAULT_TIMEOUT),
 		}
 	}
 
@@ -182,10 +205,12 @@ impl ClientBuilder {
 	///
 	/// # Panics
 	/// Panics if not in the range `duration > 0`.
-	pub fn timeout(&mut self, duration: Duration) -> &mut Self {
-		assert!(duration.is_positive());
+	pub fn timeout(&mut self, duration: Option<Duration>) -> &mut Self {
+		if let Some(duration_value) = duration {
+			assert!(duration_value.is_positive());
+		}
 
-		self.timeout = Some(duration);
+		self.timeout = duration;
 		self
 	}
 
@@ -198,8 +223,8 @@ impl ClientBuilder {
 	///
 	/// # Panics
 	/// Panics if not in the range `millis > 0`.
-	pub fn timeout_millis(&mut self, millis: i64) -> &mut Self {
-		self.timeout(Duration::milliseconds(millis));
+	pub fn timeout_millis(&mut self, millis: Option<i64>) -> &mut Self {
+		self.timeout(millis.map(Duration::milliseconds));
 		self
 	}
 }

@@ -22,14 +22,14 @@ For library documentation, visit [docs.rs](https://docs.rs/sponsor-block).
 The following is a short example of how you might fetch the segments for a
 video:
 ```rust
-use sponsor_block::{AcceptedCategories, Client};
+use sponsor_block::{AcceptedActions, AcceptedCategories, Client};
 
 // This should be random, treated like a password, and stored across sessions
 const USER_ID: &str = "your local user id";
 
 let client = Client::new(USER_ID);
 let video_segments = client
-    .fetch_segments("7U-RbOKanYs", AcceptedCategories::all())
+    .fetch_segments("7U-RbOKanYs", AcceptedCategories::all(), AcceptedActions::all())
     .await
     .ok();
 

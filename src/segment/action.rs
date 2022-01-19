@@ -19,15 +19,19 @@ use crate::api::convert_to_action_type;
 pub enum Action {
 	/// Skip the segment. This is the default action type.
 	Skip,
+	/// [Mute](https://wiki.sponsor.ajay.app/w/Mute_Segment)
+	///
 	/// Mute the segment without skipping.
-	///
-	/// See the [Mute Segment](https://wiki.sponsor.ajay.app/w/Mute_Segment) article for more
-	/// information.
 	Mute,
-	/// The segment applies to the entire video.
+	/// [Full Video Label](https://wiki.sponsor.ajay.app/w/Full_Video_Labels)
 	///
-	/// See the [Full Video Labels](https://wiki.sponsor.ajay.app/w/Full_Video_Labels) article for
-	/// more information.
+	/// The segment applies to the entire video. The associated category is too
+	/// tightly integrated with the video so if relevant content was skipped,
+	/// the majority of the video would be cut. There may still be associated
+	/// segments for parts that can be cleanly skipped.
+	///
+	/// This is mostly an informational action type; not much action can be
+	/// taken with it.
 	FullVideo,
 }
 

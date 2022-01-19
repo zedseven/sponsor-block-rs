@@ -148,59 +148,59 @@ impl Default for AdditionalSegmentInfo {
 #[non_exhaustive]
 #[enum_kind(ActionableSegmentKind, derive(Hash))]
 pub enum ActionableSegment {
-	/// Sponsor
+	/// [Sponsor](https://wiki.sponsor.ajay.app/w/Sponsor)
 	///
 	/// A paid promotion, paid referral, or direct advertisement.
 	Sponsor(TimeSection),
 
-	/// Unpaid/Self-Promotion
+	/// [Unpaid/Self-Promotion](https://wiki.sponsor.ajay.app/w/Unpaid/Self_Promotion)
 	///
 	/// Similar to a sponsor, except it's unpaid or self-promotion. This
 	/// includes sections about merchandise, donations, or information about who
 	/// the creator collaborated with.
 	UnpaidSelfPromotion(TimeSection),
 
-	/// Interaction Reminder
+	/// [Interaction Reminder](https://wiki.sponsor.ajay.app/w/Interaction_Reminder_(Subscribe))
 	///
 	/// When there is a short reminder to like, subscribe, or follow in the
 	/// middle of content.
 	InteractionReminder(TimeSection),
 
-	/// Highlight
+	/// [Highlight](https://wiki.sponsor.ajay.app/w/Highlight)
 	///
 	/// For getting to the point or highlight of the video.
 	Highlight(TimePoint),
 
-	/// Intermission/Intro Animation
+	/// [Intermission/Intro Animation](https://wiki.sponsor.ajay.app/w/Intermission/Intro_Animation)
 	///
 	/// An interval without actual content. It could be a pause, static frame,
 	/// or repeating animation.
 	IntermissionIntroAnimation(TimeSection),
 
-	/// Endcards/Credits
+	/// [Endcards/Credits](https://wiki.sponsor.ajay.app/w/Endcards/Credits)
 	///
 	/// Credits, or when the YouTube endcards appear.
 	EndcardsCredits(TimeSection),
 
-	/// Preview/Recap
+	/// [Preview/Recap](https://wiki.sponsor.ajay.app/w/Preview/Recap)
 	///
 	/// A quick recap of previous episodes, or a preview of what's coming up
 	/// later in the current video.
 	PreviewRecap(TimeSection),
 
-	/// Non-Music
+	/// [Non-Music](https://wiki.sponsor.ajay.app/w/Music:_Non-Music_Section)
 	///
 	/// Only for use in music videos. A section of the video with non-music
 	/// content.
 	NonMusic(TimeSection),
 
-	/// Filler Tangent
+	/// [Filler Tangent](https://wiki.sponsor.ajay.app/w/Filler_Tangent)
 	///
 	/// Tangential scenes added only for filler or humor that are not required
 	/// to understand the main content of the video.
 	FillerTangent(TimeSection),
 
-	/// Exclusive Access
+	/// [Exclusive Access](https://wiki.sponsor.ajay.app/w/Exclusive_Access)
 	///
 	/// Only used when the creator showcases a product, service or location that
 	/// they've received free or subsidised access to in the video that cannot
