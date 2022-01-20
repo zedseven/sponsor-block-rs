@@ -9,15 +9,16 @@ use crate::util::bytes_to_hex_string;
 use crate::{
 	api::{convert_action_bitflags_to_url, convert_category_bitflags_to_url},
 	error::{Result, SponsorBlockError},
-	segment::{AcceptedCategories, ActionableSegmentKind, Segment},
+	segment::{AcceptedCategories, Segment},
 	util::{
 		de::{bool_from_integer_str, none_on_0_0_from_str},
 		get_response_text,
 		to_url_array,
 	},
 	AcceptedActions,
-	Action,
+	ActionKind,
 	AdditionalSegmentInfo,
+	Category,
 	Client,
 	SegmentUuid,
 	SegmentUuidSlice,
@@ -39,9 +40,8 @@ struct RawHashMatch {
 #[derive(Deserialize, Debug, Default)]
 #[serde(default, rename_all = "camelCase")]
 struct RawSegment {
-	category: ActionableSegmentKind,
-	#[serde(rename = "actionType")]
-	action_type: Action,
+	category: Category,
+	action_type: ActionKind,
 	#[serde(rename = "segment")]
 	time_points: Option<[f32; 2]>,
 	start_time: Option<f32>,
@@ -65,6 +65,7 @@ impl RawSegment {
 	/// `RawSegment.additional_info`, since it is always populated by Serde but
 	/// not with useful values under certain circumstances.
 	fn convert_to_segment(self, additional_info: bool) -> Result<Segment> {
+		// Process the raw time information
 		let time_points = if let Some(points) = self.time_points {
 			points
 		} else {
@@ -102,9 +103,19 @@ impl RawSegment {
 			}
 		}
 
+		// For backwards-compatibility, the API returns `skip` as the action type for
+		// Highlight unless one of the requested action types is `poi`.
+		// This makes it so we always return the correct action type regardless.
+		// https://github.com/ajayyy/SponsorBlockServer/pull/448
+		let mut action_type = self.action_type;
+		if self.category == Category::Highlight {
+			action_type = ActionKind::PointOfInterest;
+		}
+
+		// Build the clean segment
 		Ok(Segment {
-			segment: self.category.to_actionable_segment(time_points),
-			action_type: self.action_type,
+			category: self.category,
+			action: action_type.to_action(time_points),
 			uuid: self.uuid,
 			locked: self.locked,
 			votes: self.votes,

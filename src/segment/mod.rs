@@ -1,17 +1,10 @@
 //! Everything to do with segments.
 
-// Because EnumKind doesn't implement `#[non_exhaustive]`
-#![allow(clippy::exhaustive_enums)]
-
 // Uses
-use std::result::Result as StdResult;
-
-use enum_kinds::EnumKind;
-use serde::{de::Error, Deserialize, Deserializer};
+use serde::Deserialize;
 use time::OffsetDateTime;
 
 use crate::{
-	api::convert_to_segment_kind,
 	util::de::{bool_from_integer_str, datetime_from_millis_timestamp},
 	Client,
 	PublicUserId,
@@ -32,10 +25,11 @@ pub use self::{action::*, category::*};
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct Segment {
-	/// The section with timestamp values to act upon.
-	pub segment: ActionableSegment,
+	/// The kind of segment.
+	pub category: Category,
 	/// What action the submitter recommended to take for the segment.
-	pub action_type: Action,
+	/// This also encodes the time information if it is relevant.
+	pub action: Action,
 	/// The UUID of the segment submitter.
 	pub uuid: SegmentUuid,
 	/// Whether the segment is locked or not.
@@ -139,163 +133,4 @@ impl Default for AdditionalSegmentInfo {
 			submitter_user_agent: String::default(),
 		}
 	}
-}
-
-/// A video segment, containing timestamp information.
-///
-/// For segment types, visit: <https://wiki.sponsor.ajay.app/w/Segment_Categories>
-#[derive(EnumKind, Debug)]
-#[non_exhaustive]
-#[enum_kind(ActionableSegmentKind, derive(Hash))]
-pub enum ActionableSegment {
-	/// [Sponsor](https://wiki.sponsor.ajay.app/w/Sponsor)
-	///
-	/// A paid promotion, paid referral, or direct advertisement.
-	Sponsor(TimeSection),
-
-	/// [Unpaid/Self-Promotion](https://wiki.sponsor.ajay.app/w/Unpaid/Self_Promotion)
-	///
-	/// Similar to a sponsor, except it's unpaid or self-promotion. This
-	/// includes sections about merchandise, donations, or information about who
-	/// the creator collaborated with.
-	UnpaidSelfPromotion(TimeSection),
-
-	/// [Interaction Reminder](https://wiki.sponsor.ajay.app/w/Interaction_Reminder_(Subscribe))
-	///
-	/// When there is a short reminder to like, subscribe, or follow in the
-	/// middle of content.
-	InteractionReminder(TimeSection),
-
-	/// [Highlight](https://wiki.sponsor.ajay.app/w/Highlight)
-	///
-	/// For getting to the point or highlight of the video.
-	Highlight(TimePoint),
-
-	/// [Intermission/Intro Animation](https://wiki.sponsor.ajay.app/w/Intermission/Intro_Animation)
-	///
-	/// An interval without actual content. It could be a pause, static frame,
-	/// or repeating animation.
-	IntermissionIntroAnimation(TimeSection),
-
-	/// [Endcards/Credits](https://wiki.sponsor.ajay.app/w/Endcards/Credits)
-	///
-	/// Credits, or when the YouTube endcards appear.
-	EndcardsCredits(TimeSection),
-
-	/// [Preview/Recap](https://wiki.sponsor.ajay.app/w/Preview/Recap)
-	///
-	/// A quick recap of previous episodes, or a preview of what's coming up
-	/// later in the current video.
-	PreviewRecap(TimeSection),
-
-	/// [Non-Music](https://wiki.sponsor.ajay.app/w/Music:_Non-Music_Section)
-	///
-	/// Only for use in music videos. A section of the video with non-music
-	/// content.
-	NonMusic(TimeSection),
-
-	/// [Filler Tangent](https://wiki.sponsor.ajay.app/w/Filler_Tangent)
-	///
-	/// Tangential scenes added only for filler or humor that are not required
-	/// to understand the main content of the video.
-	FillerTangent(TimeSection),
-
-	/// [Exclusive Access](https://wiki.sponsor.ajay.app/w/Exclusive_Access)
-	///
-	/// Only used when the creator showcases a product, service or location that
-	/// they've received free or subsidised access to in the video that cannot
-	/// be completely removed by cuts.
-	ExclusiveAccess,
-}
-
-impl ActionableSegmentKind {
-	pub(crate) fn to_actionable_segment(self, time_points: [f32; 2]) -> ActionableSegment {
-		match self {
-			ActionableSegmentKind::Sponsor => ActionableSegment::Sponsor(TimeSection {
-				start: time_points[0],
-				end: time_points[1],
-			}),
-			ActionableSegmentKind::UnpaidSelfPromotion => {
-				ActionableSegment::UnpaidSelfPromotion(TimeSection {
-					start: time_points[0],
-					end: time_points[1],
-				})
-			}
-			ActionableSegmentKind::InteractionReminder => {
-				ActionableSegment::InteractionReminder(TimeSection {
-					start: time_points[0],
-					end: time_points[1],
-				})
-			}
-			ActionableSegmentKind::Highlight => ActionableSegment::Highlight(TimePoint {
-				point: time_points[0],
-			}),
-			ActionableSegmentKind::IntermissionIntroAnimation => {
-				ActionableSegment::IntermissionIntroAnimation(TimeSection {
-					start: time_points[0],
-					end: time_points[1],
-				})
-			}
-			ActionableSegmentKind::EndcardsCredits => {
-				ActionableSegment::EndcardsCredits(TimeSection {
-					start: time_points[0],
-					end: time_points[1],
-				})
-			}
-			ActionableSegmentKind::PreviewRecap => ActionableSegment::PreviewRecap(TimeSection {
-				start: time_points[0],
-				end: time_points[1],
-			}),
-			ActionableSegmentKind::NonMusic => ActionableSegment::NonMusic(TimeSection {
-				start: time_points[0],
-				end: time_points[1],
-			}),
-			ActionableSegmentKind::FillerTangent => ActionableSegment::FillerTangent(TimeSection {
-				start: time_points[0],
-				end: time_points[1],
-			}),
-			ActionableSegmentKind::ExclusiveAccess => ActionableSegment::ExclusiveAccess,
-		}
-	}
-}
-
-impl<'de> Deserialize<'de> for ActionableSegmentKind {
-	fn deserialize<D: Deserializer<'de>>(deserializer: D) -> StdResult<Self, D::Error> {
-		let action_string = String::deserialize(deserializer)?;
-		convert_to_segment_kind(action_string.as_str()).map_err(D::Error::custom)
-	}
-}
-
-impl Default for ActionableSegmentKind {
-	fn default() -> Self {
-		Self::Sponsor
-	}
-}
-
-/// A skippable section, category-agnostic. Contains a start and end time.
-///
-/// `start` is guaranteed to be <= `end`.
-#[derive(Debug)]
-#[non_exhaustive]
-pub struct TimeSection {
-	/// The start point of the section.
-	pub start: f32,
-	/// The end point of the section.
-	pub end: f32,
-}
-
-impl TimeSection {
-	/// Gets the duration of the section.
-	#[must_use]
-	pub fn duration(&self) -> f32 {
-		self.end - self.start
-	}
-}
-
-/// A singular point in the video, category-agnostic.
-#[derive(Debug)]
-#[non_exhaustive]
-pub struct TimePoint {
-	/// The singular point in time.
-	pub point: f32,
 }

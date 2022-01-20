@@ -7,8 +7,8 @@ use crate::{
 	util::to_url_array_conditional_convert,
 	AcceptedActions,
 	AcceptedCategories,
-	Action,
-	ActionableSegmentKind,
+	ActionKind,
+	Category,
 };
 
 // The API names for categories
@@ -26,7 +26,8 @@ const EXCLUSIVE_ACCESS_NAME: &str = "exclusive_access";
 // The API names for actions
 const ACTION_SKIP_NAME: &str = "skip";
 const ACTION_MUTE_NAME: &str = "mute";
-const ACTION_FULL_NAME: &str = "full";
+const ACTION_POINT_OF_INTEREST_NAME: &str = "poi";
+const ACTION_FULL_VIDEO_NAME: &str = "full";
 
 /// A value received from the API is not recognized.
 ///
@@ -43,20 +44,18 @@ pub(crate) struct UnknownValueError {
 
 // API value conversion functions. The goal here is to make it so everything
 // else in the library need not interface with raw category names.
-pub(crate) fn convert_to_segment_kind(
-	category: &str,
-) -> Result<ActionableSegmentKind, UnknownValueError> {
+pub(crate) fn convert_to_category(category: &str) -> Result<Category, UnknownValueError> {
 	match category {
-		SPONSOR_NAME => Ok(ActionableSegmentKind::Sponsor),
-		UNPAID_SELF_PROMOTION_NAME => Ok(ActionableSegmentKind::UnpaidSelfPromotion),
-		INTERACTION_REMINDER_NAME => Ok(ActionableSegmentKind::InteractionReminder),
-		HIGHLIGHT_NAME => Ok(ActionableSegmentKind::Highlight),
-		INTERMISSION_INTRO_ANIMATION_NAME => Ok(ActionableSegmentKind::IntermissionIntroAnimation),
-		ENDCARDS_CREDITS_NAME => Ok(ActionableSegmentKind::EndcardsCredits),
-		PREVIEW_RECAP_NAME => Ok(ActionableSegmentKind::PreviewRecap),
-		NON_MUSIC_NAME => Ok(ActionableSegmentKind::NonMusic),
-		FILLER_TANGENT_NAME => Ok(ActionableSegmentKind::FillerTangent),
-		EXCLUSIVE_ACCESS_NAME => Ok(ActionableSegmentKind::ExclusiveAccess),
+		SPONSOR_NAME => Ok(Category::Sponsor),
+		UNPAID_SELF_PROMOTION_NAME => Ok(Category::UnpaidSelfPromotion),
+		INTERACTION_REMINDER_NAME => Ok(Category::InteractionReminder),
+		HIGHLIGHT_NAME => Ok(Category::Highlight),
+		INTERMISSION_INTRO_ANIMATION_NAME => Ok(Category::IntermissionIntroAnimation),
+		ENDCARDS_CREDITS_NAME => Ok(Category::EndcardsCredits),
+		PREVIEW_RECAP_NAME => Ok(Category::PreviewRecap),
+		NON_MUSIC_NAME => Ok(Category::NonMusic),
+		FILLER_TANGENT_NAME => Ok(Category::FillerTangent),
+		EXCLUSIVE_ACCESS_NAME => Ok(Category::ExclusiveAccess),
 		unknown_value => Err(UnknownValueError {
 			r#type: "category".to_owned(),
 			value: unknown_value.to_owned(),
@@ -64,11 +63,12 @@ pub(crate) fn convert_to_segment_kind(
 	}
 }
 
-pub(crate) fn convert_to_action_type(action_type: &str) -> Result<Action, UnknownValueError> {
+pub(crate) fn convert_to_action_kind(action_type: &str) -> Result<ActionKind, UnknownValueError> {
 	match action_type {
-		ACTION_SKIP_NAME => Ok(Action::Skip),
-		ACTION_MUTE_NAME => Ok(Action::Mute),
-		ACTION_FULL_NAME => Ok(Action::FullVideo),
+		ACTION_SKIP_NAME => Ok(ActionKind::Skip),
+		ACTION_MUTE_NAME => Ok(ActionKind::Mute),
+		ACTION_POINT_OF_INTEREST_NAME => Ok(ActionKind::PointOfInterest),
+		ACTION_FULL_VIDEO_NAME => Ok(ActionKind::FullVideo),
 		unknown_value => Err(UnknownValueError {
 			r#type: "actionType".to_owned(),
 			value: unknown_value.to_owned(),
@@ -112,7 +112,11 @@ pub(crate) fn convert_action_bitflags_to_url(accepted_actions: AcceptedActions) 
 	const ACTION_PAIRS: &[(AcceptedActions, &str)] = &[
 		(AcceptedActions::SKIP, ACTION_SKIP_NAME),
 		(AcceptedActions::MUTE, ACTION_MUTE_NAME),
-		(AcceptedActions::FULL_VIDEO, ACTION_FULL_NAME),
+		(
+			AcceptedActions::POINT_OF_INTEREST,
+			ACTION_POINT_OF_INTEREST_NAME,
+		),
+		(AcceptedActions::FULL_VIDEO, ACTION_FULL_VIDEO_NAME),
 	];
 
 	to_url_array_conditional_convert(
