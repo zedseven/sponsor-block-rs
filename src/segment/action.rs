@@ -15,7 +15,7 @@ use crate::api::convert_to_action_kind;
 /// how to handle the segment.
 ///
 /// See <https://wiki.sponsor.ajay.app/w/Types#Action_Type> for more information.
-#[derive(Debug, EnumKind)]
+#[derive(Clone, Copy, Debug, EnumKind, PartialEq)]
 #[non_exhaustive]
 #[enum_kind(ActionKind, non_exhaustive, derive(Hash))]
 pub enum Action {
@@ -69,7 +69,7 @@ impl Default for AcceptedActions {
 /// A skippable section, category-agnostic. Contains a start and end time.
 ///
 /// `start` is guaranteed to be <= `end`.
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 #[non_exhaustive]
 pub struct TimeSection {
 	/// The start point of the section.
@@ -87,7 +87,7 @@ impl TimeSection {
 }
 
 /// A singular point in the video, category-agnostic.
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 #[non_exhaustive]
 pub struct TimePoint {
 	/// The singular point in time.
