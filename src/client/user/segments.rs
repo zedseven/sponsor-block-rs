@@ -1,3 +1,5 @@
+//! The functions for retrieving segments and segment info for videos.
+
 // Uses
 use serde::Deserialize;
 use serde_json::from_str as from_json_str;
@@ -9,16 +11,13 @@ use crate::util::bytes_to_hex_string;
 use crate::{
 	api::{convert_action_bitflags_to_url, convert_category_bitflags_to_url},
 	error::{Result, SponsorBlockError},
-	segment::{AcceptedCategories, Segment},
+	segment::{AcceptedActions, AcceptedCategories, ActionKind, Category, Segment},
 	util::{
 		de::{bool_from_integer_str, none_on_0_0_from_str},
 		get_response_text,
 		to_url_array,
 	},
-	AcceptedActions,
-	ActionKind,
 	AdditionalSegmentInfo,
-	Category,
 	Client,
 	SegmentUuid,
 	SegmentUuidSlice,

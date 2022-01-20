@@ -1,4 +1,4 @@
-//! Additional interface for segment categories.
+//! The interface for segment categories.
 
 // Uses
 use std::result::Result as StdResult;
@@ -89,6 +89,7 @@ impl Default for Category {
 
 bitflags! {
 	/// A struct for supplying the categories you want to look for in a video.
+	#[repr(transparent)]
 	pub struct AcceptedCategories: u32 {
 		/// A convenience constant for having no accepted categories.
 		const NONE = 0b0000_0000_0000;

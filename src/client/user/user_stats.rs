@@ -1,3 +1,5 @@
+//! The functions for retrieving user statistics.
+
 // Uses
 use std::{collections::HashMap, result::Result as StdResult};
 

@@ -45,6 +45,7 @@ pub enum Action {
 
 bitflags! {
 	/// A struct for supplying the action types of segments you want to look for in a video.
+	#[repr(transparent)]
 	pub struct AcceptedActions: u32 {
 		/// A convenience constant for having no accepted action types.
 		const NONE = 0b0000;

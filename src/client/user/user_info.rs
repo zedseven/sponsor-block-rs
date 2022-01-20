@@ -1,3 +1,5 @@
+//! The functions for retrieving info about users.
+
 // Uses
 use serde::Deserialize;
 use serde_json::from_str as from_json_str;

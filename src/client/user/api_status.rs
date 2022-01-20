@@ -1,3 +1,5 @@
+//! The functions for retrieving information about the API status.
+
 // Uses
 use serde::Deserialize;
 use serde_json::from_str as from_json_str;
