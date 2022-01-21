@@ -78,7 +78,10 @@ impl ActionKind {
 }
 
 impl<'de> Deserialize<'de> for ActionKind {
-	fn deserialize<D: Deserializer<'de>>(deserializer: D) -> StdResult<Self, D::Error> {
+	fn deserialize<D>(deserializer: D) -> StdResult<Self, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
 		let action_string = String::deserialize(deserializer)?;
 		convert_to_action_kind(action_string.as_str()).map_err(D::Error::custom)
 	}

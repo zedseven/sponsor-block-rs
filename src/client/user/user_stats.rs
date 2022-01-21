@@ -76,10 +76,10 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_user_stats_public<S: AsRef<str>>(
-		&self,
-		public_user_id: S,
-	) -> Result<UserStats> {
+	pub async fn fetch_user_stats_public<S>(&self, public_user_id: S) -> Result<UserStats>
+	where
+		S: AsRef<str>,
+	{
 		// Build the request
 		let request = self
 			.http
@@ -113,10 +113,10 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_user_stats_local<S: AsRef<str>>(
-		&self,
-		local_user_id: S,
-	) -> Result<UserStats> {
+	pub async fn fetch_user_stats_local<S>(&self, local_user_id: S) -> Result<UserStats>
+	where
+		S: AsRef<str>,
+	{
 		// Build the request
 		let request = self
 			.http

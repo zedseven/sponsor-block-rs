@@ -138,12 +138,15 @@ impl Client {
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
 	/// [`HttpClient(404)`]: crate::SponsorBlockError::HttpClient
 	/// [`NoMatchingVideoHash`]: crate::SponsorBlockError::NoMatchingVideoHash
-	pub async fn fetch_segments<V: AsRef<str>>(
+	pub async fn fetch_segments<V>(
 		&self,
 		video_id: V,
 		accepted_categories: AcceptedCategories,
 		accepted_actions: AcceptedActions,
-	) -> Result<Vec<Segment>> {
+	) -> Result<Vec<Segment>>
+	where
+		V: AsRef<str>,
+	{
 		self.fetch_segments_with_required::<V, &str>(
 			video_id,
 			accepted_categories,
@@ -166,13 +169,17 @@ impl Client {
 	/// function](Self::fetch_segments).
 	///
 	/// [`fetch_segments`]: Self::fetch_segments
-	pub async fn fetch_segments_with_required<V: AsRef<str>, S: AsRef<str>>(
+	pub async fn fetch_segments_with_required<V, S>(
 		&self,
 		video_id: V,
 		accepted_categories: AcceptedCategories,
 		accepted_actions: AcceptedActions,
 		required_segments: &[S],
-	) -> Result<Vec<Segment>> {
+	) -> Result<Vec<Segment>>
+	where
+		V: AsRef<str>,
+		S: AsRef<str>,
+	{
 		// Function Constants
 		const API_ENDPOINT: &str = "/skipSegments";
 
@@ -253,7 +260,10 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_segment_info<S: AsRef<str>>(&self, segment_uuid: S) -> Result<Segment> {
+	pub async fn fetch_segment_info<S>(&self, segment_uuid: S) -> Result<Segment>
+	where
+		S: AsRef<str>,
+	{
 		Ok(self
 			.fetch_segment_info_multiple(&[segment_uuid])
 			.await?
@@ -271,10 +281,10 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_segment_info_multiple<S: AsRef<str>>(
-		&self,
-		segment_uuids: &[S],
-	) -> Result<Vec<Segment>> {
+	pub async fn fetch_segment_info_multiple<S>(&self, segment_uuids: &[S]) -> Result<Vec<Segment>>
+	where
+		S: AsRef<str>,
+	{
 		// Function Constants
 		const API_ENDPOINT: &str = "/segmentInfo";
 

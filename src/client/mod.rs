@@ -32,13 +32,19 @@ pub struct Client {
 impl Client {
 	/// Creates a new instance of the client with default configuration values.
 	#[must_use]
-	pub fn new<U: Into<String>>(user_id: U) -> Self {
+	pub fn new<U>(user_id: U) -> Self
+	where
+		U: Into<String>,
+	{
 		ClientBuilder::new(user_id).build()
 	}
 
 	/// Creates a new instance of the [`ClientBuilder`].
 	#[must_use]
-	pub fn builder<U: Into<String>>(user_id: U) -> ClientBuilder {
+	pub fn builder<U>(user_id: U) -> ClientBuilder
+	where
+		U: Into<String>,
+	{
 		ClientBuilder::new(user_id)
 	}
 }
@@ -99,7 +105,10 @@ impl ClientBuilder {
 	/// Creates a new instance of the struct, with default values for all
 	/// configuration.
 	#[must_use]
-	pub fn new<U: Into<String>>(user_id: U) -> Self {
+	pub fn new<U>(user_id: U) -> Self
+	where
+		U: Into<String>,
+	{
 		Self {
 			user_agent: Self::DEFAULT_USER_AGENT.to_owned(),
 			user_id: user_id.into(),
@@ -147,7 +156,10 @@ impl ClientBuilder {
 	/// The default value is [`BASE_URL_MAIN`].
 	///
 	/// [`BASE_URL_MAIN`]: Self::BASE_URL_MAIN
-	pub fn base_url<U: AsRef<str>>(&mut self, base_url: U) -> &mut Self {
+	pub fn base_url<U>(&mut self, base_url: U) -> &mut Self
+	where
+		U: AsRef<str>,
+	{
 		self.base_url = base_url.as_ref().trim_end_matches('/').to_owned();
 		self
 	}
@@ -171,7 +183,10 @@ impl ClientBuilder {
 	/// Sets the service value to use with the API.
 	///
 	/// See <https://wiki.sponsor.ajay.app/w/Types#Service> for more information.
-	pub fn service<S: Into<String>>(&mut self, service: S) -> &mut Self {
+	pub fn service<S>(&mut self, service: S) -> &mut Self
+	where
+		S: Into<String>,
+	{
 		self.service = service.into();
 		self
 	}

@@ -75,7 +75,10 @@ pub enum Category {
 }
 
 impl<'de> Deserialize<'de> for Category {
-	fn deserialize<D: Deserializer<'de>>(deserializer: D) -> StdResult<Self, D::Error> {
+	fn deserialize<D>(deserializer: D) -> StdResult<Self, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
 		let category_string = String::deserialize(deserializer)?;
 		convert_to_category(category_string.as_str()).map_err(D::Error::custom)
 	}

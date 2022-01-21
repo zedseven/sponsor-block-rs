@@ -22,7 +22,10 @@ pub(crate) async fn get_response_text(response: Response) -> Result<String> {
 	}
 }
 
-pub(crate) fn to_url_array<S: AsRef<str>>(slice: &[S]) -> String {
+pub(crate) fn to_url_array<S>(slice: &[S]) -> String
+where
+	S: AsRef<str>,
+{
 	to_url_array_conditional(slice, |_| true)
 }
 
