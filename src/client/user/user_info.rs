@@ -7,7 +7,7 @@ use serde_json::from_str as from_json_str;
 use crate::{error::Result, util::get_response_text, Client};
 
 /// The results of a user info request.
-#[derive(Clone, Debug, Default, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, PartialOrd)]
 #[non_exhaustive]
 #[serde(default, rename_all = "camelCase")]
 pub struct UserInfo {

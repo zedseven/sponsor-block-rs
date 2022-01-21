@@ -11,7 +11,7 @@ use crate::api::convert_to_category;
 /// A video segment category, containing timestamp information.
 ///
 /// For a list of all types, visit: <https://wiki.sponsor.ajay.app/w/Segment_Categories>
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[non_exhaustive]
 pub enum Category {
 	/// [Sponsor](https://wiki.sponsor.ajay.app/w/Sponsor)

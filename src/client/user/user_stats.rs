@@ -52,7 +52,7 @@ fn map_action_types<'de, D: Deserializer<'de>, O: Deserialize<'de>>(
 /// TODO: Find a nice way to remove this. <https://github.com/serde-rs/serde/issues/2115>
 ///
 /// [`UserInfo`]: super::user_info::UserInfo
-#[derive(Clone, Debug, Default, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, PartialOrd)]
 #[non_exhaustive]
 #[serde(default, rename_all = "camelCase")]
 pub struct OverallStats {

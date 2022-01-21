@@ -19,7 +19,7 @@ pub use self::{action::*, category::*};
 
 /// A segment, representing a section or point in time in a video that is worth
 /// skipping or otherwise treating specially.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
 #[non_exhaustive]
 pub struct Segment {
 	/// The kind of segment.
@@ -83,7 +83,7 @@ impl Segment {
 ///
 /// Whether or not a function supplies this information will be
 /// noted in its documentation.
-#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, PartialOrd)]
 #[non_exhaustive]
 #[serde(default, rename_all = "camelCase")]
 pub struct AdditionalSegmentInfo {

@@ -15,7 +15,7 @@ use crate::api::convert_to_action_kind;
 /// how to handle the segment.
 ///
 /// See <https://wiki.sponsor.ajay.app/w/Types#Action_Type> for more information.
-#[derive(Clone, Copy, Debug, EnumKind, PartialEq)]
+#[derive(Clone, Copy, Debug, EnumKind, PartialEq, PartialOrd)]
 #[non_exhaustive]
 #[enum_kind(ActionKind, non_exhaustive, derive(Hash))]
 pub enum Action {
