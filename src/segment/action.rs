@@ -20,15 +20,23 @@ use crate::api::convert_to_action_kind;
 #[enum_kind(ActionKind, non_exhaustive, derive(Hash))]
 pub enum Action {
 	/// Skip the segment. This is the default action type.
+	///
+	/// The first `f32` value is the start time, and the second value is the end
+	/// time.
 	Skip(f32, f32),
 
 	/// [Mute](https://wiki.sponsor.ajay.app/w/Mute_Segment)
 	///
 	/// Mute the segment without skipping.
+	///
+	/// The first `f32` value is the start time, and the second value is the end
+	/// time.
 	Mute(f32, f32),
 
 	/// A single point in the video.
 	/// Not a skippable segment, but used as a point to potentially *skip to*.
+	///
+	/// The `f32` value is the point in time.
 	PointOfInterest(f32),
 
 	/// [Full Video Label](https://wiki.sponsor.ajay.app/w/Full_Video_Labels)
