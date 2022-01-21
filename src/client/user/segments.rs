@@ -190,7 +190,7 @@ impl Client {
 			request = self
 				.http
 				.get(format!("{}{}", &self.base_url, API_ENDPOINT))
-				.query(&[("videoID", video_id)]);
+				.query(&[("videoID", video_id.as_ref())]);
 		}
 		#[cfg(feature = "private_searches")]
 		{
