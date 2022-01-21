@@ -23,7 +23,7 @@ use crate::{
 
 // Function-Specific Deserialization Structs
 #[cfg(feature = "private_searches")]
-#[derive(Deserialize, Debug, Default)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 struct RawHashMatch {
 	#[serde(rename = "videoID")]
@@ -32,7 +32,7 @@ struct RawHashMatch {
 	segments: Vec<RawSegment>,
 }
 
-#[derive(Deserialize, Debug, Default)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 struct RawSegment {
 	category: Category,

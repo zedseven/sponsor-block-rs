@@ -16,7 +16,7 @@ use crate::{
 };
 
 /// The results of a user info request.
-#[derive(Deserialize, Debug, Default)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq)]
 #[non_exhaustive]
 #[serde(default, rename_all = "camelCase")]
 pub struct UserStats {
@@ -52,7 +52,7 @@ fn map_action_types<'de, D: Deserializer<'de>, O: Deserialize<'de>>(
 /// TODO: Find a nice way to remove this. <https://github.com/serde-rs/serde/issues/2115>
 ///
 /// [`UserInfo`]: super::user_info::UserInfo
-#[derive(Deserialize, Debug, Default)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq)]
 #[non_exhaustive]
 #[serde(default, rename_all = "camelCase")]
 pub struct OverallStats {
