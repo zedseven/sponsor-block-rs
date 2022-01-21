@@ -4,8 +4,6 @@ use rand::{
 	thread_rng,
 };
 
-use crate::LocalUserId;
-
 /// A utility function that generates a new local user ID.
 ///
 /// *Do not* call this every time you start up a client - prefer using a single
@@ -17,7 +15,7 @@ use crate::LocalUserId;
 /// This function is based directly on
 /// [how the official extension does it](https://github.com/ajayyy/SponsorBlock/blob/a9e43f95f51dbf7f3517a0cb6956397fbe2b622f/src/utils.ts#L299).
 #[must_use]
-pub fn gen_user_id() -> LocalUserId {
+pub fn gen_user_id() -> String {
 	const LENGTH: usize = 36;
 	const CHAR_SET: &[char] = &[
 		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',

@@ -7,10 +7,7 @@ use time::OffsetDateTime;
 use crate::{
 	util::de::{bool_from_integer_str, datetime_from_millis_timestamp},
 	Client,
-	PublicUserId,
 	Result,
-	SegmentUuid,
-	VideoId,
 };
 
 // Modules
@@ -31,7 +28,7 @@ pub struct Segment {
 	/// This also encodes the time information if it is relevant.
 	pub action: Action,
 	/// The UUID of the segment submitter.
-	pub uuid: SegmentUuid,
+	pub uuid: String,
 	/// Whether the segment is locked or not.
 	pub locked: bool,
 	/// How many votes the segment has.
@@ -92,12 +89,12 @@ impl Segment {
 pub struct AdditionalSegmentInfo {
 	/// The video ID associated with the segment.
 	#[serde(rename = "videoID")]
-	pub video_id: VideoId,
+	pub video_id: String,
 	/// The number of incorrect votes.
 	pub incorrect_votes: u32,
 	/// The public user ID of the segment submitter.
 	#[serde(rename = "userID")]
-	pub submitter_id: PublicUserId,
+	pub submitter_id: String,
 	/// The date and time that the segment was submitted.
 	#[serde(deserialize_with = "datetime_from_millis_timestamp")]
 	pub time_submitted: OffsetDateTime,
@@ -120,9 +117,9 @@ pub struct AdditionalSegmentInfo {
 impl Default for AdditionalSegmentInfo {
 	fn default() -> Self {
 		Self {
-			video_id: VideoId::default(),
+			video_id: String::default(),
 			incorrect_votes: u32::default(),
-			submitter_id: PublicUserId::default(),
+			submitter_id: String::default(),
 			time_submitted: OffsetDateTime::UNIX_EPOCH, /* Not great, but this should in theory
 			                                             * never be called */
 			views: u32::default(),

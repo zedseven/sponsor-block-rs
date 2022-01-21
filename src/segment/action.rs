@@ -20,16 +20,16 @@ use crate::api::convert_to_action_kind;
 #[enum_kind(ActionKind, non_exhaustive, derive(Hash))]
 pub enum Action {
 	/// Skip the segment. This is the default action type.
-	Skip(TimeSection),
+	Skip(f32, f32),
 
 	/// [Mute](https://wiki.sponsor.ajay.app/w/Mute_Segment)
 	///
 	/// Mute the segment without skipping.
-	Mute(TimeSection),
+	Mute(f32, f32),
 
 	/// A single point in the video.
 	/// Not a skippable segment, but used as a point to potentially *skip to*.
-	PointOfInterest(TimePoint),
+	PointOfInterest(f32),
 
 	/// [Full Video Label](https://wiki.sponsor.ajay.app/w/Full_Video_Labels)
 	///
@@ -66,48 +66,12 @@ impl Default for AcceptedActions {
 	}
 }
 
-/// A skippable section, category-agnostic. Contains a start and end time.
-///
-/// `start` is guaranteed to be <= `end`.
-#[derive(Clone, Copy, Debug, PartialEq)]
-#[non_exhaustive]
-pub struct TimeSection {
-	/// The start point of the section.
-	pub start: f32,
-	/// The end point of the section.
-	pub end: f32,
-}
-
-impl TimeSection {
-	/// Gets the duration of the section.
-	#[must_use]
-	pub fn duration(&self) -> f32 {
-		self.end - self.start
-	}
-}
-
-/// A singular point in the video, category-agnostic.
-#[derive(Clone, Copy, Debug, PartialEq)]
-#[non_exhaustive]
-pub struct TimePoint {
-	/// The singular point in time.
-	pub point: f32,
-}
-
 impl ActionKind {
 	pub(crate) fn to_action(self, time_points: [f32; 2]) -> Action {
 		match self {
-			ActionKind::Skip => Action::Skip(TimeSection {
-				start: time_points[0],
-				end: time_points[1],
-			}),
-			ActionKind::Mute => Action::Mute(TimeSection {
-				start: time_points[0],
-				end: time_points[1],
-			}),
-			ActionKind::PointOfInterest => Action::PointOfInterest(TimePoint {
-				point: time_points[0],
-			}),
+			ActionKind::Skip => Action::Skip(time_points[0], time_points[1]),
+			ActionKind::Mute => Action::Mute(time_points[0], time_points[1]),
+			ActionKind::PointOfInterest => Action::PointOfInterest(time_points[0]),
 			ActionKind::FullVideo => Action::FullVideo,
 		}
 	}

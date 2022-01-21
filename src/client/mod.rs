@@ -16,26 +16,6 @@ pub use self::user::*;
 #[cfg(feature = "vip")]
 pub use self::vip::*;
 
-// Type Definitions
-/// A video ID.
-pub type VideoId = String;
-/// The ref version of [`VideoId`] for use in functions.
-pub type VideoIdSlice = str;
-/// A public user ID. This value is a hash of the [`LocalUserId`] and is used
-/// publicly.
-pub type PublicUserId = String;
-/// The ref version of [`PublicUserId`] for use in functions.
-pub type PublicUserIdSlice = str;
-/// A local/private user ID. This value should be kept private and treated like
-/// a password.
-pub type LocalUserId = String;
-/// The ref version of [`LocalUserId`] for use in functions.
-pub type LocalUserIdSlice = str;
-/// A UUID for a segment, uniquely identifying it in the database.
-pub type SegmentUuid = String;
-/// The ref version of [`SegmentUuid`] for use in functions.
-pub type SegmentUuidSlice = str;
-
 /// The client for interfacing with SponsorBlock.
 pub struct Client {
 	// Internal
@@ -52,13 +32,13 @@ pub struct Client {
 impl Client {
 	/// Creates a new instance of the client with default configuration values.
 	#[must_use]
-	pub fn new<U: Into<LocalUserId>>(user_id: U) -> Self {
+	pub fn new<U: Into<String>>(user_id: U) -> Self {
 		ClientBuilder::new(user_id).build()
 	}
 
 	/// Creates a new instance of the [`ClientBuilder`].
 	#[must_use]
-	pub fn builder<U: Into<LocalUserId>>(user_id: U) -> ClientBuilder {
+	pub fn builder<U: Into<String>>(user_id: U) -> ClientBuilder {
 		ClientBuilder::new(user_id)
 	}
 }
@@ -70,7 +50,7 @@ pub struct ClientBuilder {
 	user_agent: String,
 
 	// Config
-	user_id: LocalUserId,
+	user_id: String,
 	base_url: String,
 	#[cfg(feature = "private_searches")]
 	hash_prefix_length: u8,
@@ -119,7 +99,7 @@ impl ClientBuilder {
 	/// Creates a new instance of the struct, with default values for all
 	/// configuration.
 	#[must_use]
-	pub fn new<U: Into<LocalUserId>>(user_id: U) -> Self {
+	pub fn new<U: Into<String>>(user_id: U) -> Self {
 		Self {
 			user_agent: Self::DEFAULT_USER_AGENT.to_owned(),
 			user_id: user_id.into(),
@@ -167,8 +147,8 @@ impl ClientBuilder {
 	/// The default value is [`BASE_URL_MAIN`].
 	///
 	/// [`BASE_URL_MAIN`]: Self::BASE_URL_MAIN
-	pub fn base_url(&mut self, base_url: &str) -> &mut Self {
-		self.base_url = base_url.trim_end_matches('/').to_owned();
+	pub fn base_url<U: AsRef<str>>(&mut self, base_url: U) -> &mut Self {
+		self.base_url = base_url.as_ref().trim_end_matches('/').to_owned();
 		self
 	}
 
@@ -191,8 +171,8 @@ impl ClientBuilder {
 	/// Sets the service value to use with the API.
 	///
 	/// See <https://wiki.sponsor.ajay.app/w/Types#Service> for more information.
-	pub fn service(&mut self, service: &str) -> &mut Self {
-		self.service = service.to_owned();
+	pub fn service<S: Into<String>>(&mut self, service: S) -> &mut Self {
+		self.service = service.into();
 		self
 	}
 

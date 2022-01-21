@@ -13,9 +13,6 @@ use crate::{
 	ActionKind,
 	Category,
 	Client,
-	LocalUserIdSlice,
-	PublicUserId,
-	PublicUserIdSlice,
 };
 
 /// The results of a user info request.
@@ -25,7 +22,7 @@ use crate::{
 pub struct UserStats {
 	/// The user's public user ID.
 	#[serde(rename = "userID")]
-	pub user_id: PublicUserId,
+	pub user_id: String,
 	/// The user's username.
 	pub user_name: Option<String>,
 	/// The overall stats for the user.
@@ -79,15 +76,15 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_user_stats_public(
+	pub async fn fetch_user_stats_public<S: AsRef<str>>(
 		&self,
-		public_user_id: &PublicUserIdSlice,
+		public_user_id: S,
 	) -> Result<UserStats> {
 		// Build the request
 		let request = self
 			.http
 			.get(format!("{}{}", &self.base_url, API_ENDPOINT))
-			.query(&[("publicUserID", public_user_id)])
+			.query(&[("publicUserID", public_user_id.as_ref())])
 			.query(&[("fetchCategoryStats", true), ("fetchActionTypeStats", true)]);
 
 		// Send the request
@@ -116,15 +113,15 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_user_stats_local(
+	pub async fn fetch_user_stats_local<S: AsRef<str>>(
 		&self,
-		local_user_id: &LocalUserIdSlice,
+		local_user_id: S,
 	) -> Result<UserStats> {
 		// Build the request
 		let request = self
 			.http
 			.get(format!("{}{}", &self.base_url, API_ENDPOINT))
-			.query(&[("userID", local_user_id)])
+			.query(&[("userID", local_user_id.as_ref())])
 			.query(&[("fetchCategoryStats", true), ("fetchActionTypeStats", true)]);
 
 		// Send the request

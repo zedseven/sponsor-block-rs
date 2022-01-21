@@ -19,10 +19,6 @@ use crate::{
 	},
 	AdditionalSegmentInfo,
 	Client,
-	SegmentUuid,
-	SegmentUuidSlice,
-	VideoId,
-	VideoIdSlice,
 };
 
 // Function-Specific Deserialization Structs
@@ -31,7 +27,7 @@ use crate::{
 #[serde(default)]
 struct RawHashMatch {
 	#[serde(rename = "videoID")]
-	video_id: VideoId,
+	video_id: String,
 	hash: String,
 	segments: Vec<RawSegment>,
 }
@@ -46,7 +42,7 @@ struct RawSegment {
 	start_time: Option<f32>,
 	end_time: Option<f32>,
 	#[serde(rename = "UUID")]
-	uuid: SegmentUuid,
+	uuid: String,
 	#[serde(deserialize_with = "bool_from_integer_str")]
 	locked: bool,
 	votes: i32,
@@ -142,13 +138,13 @@ impl Client {
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
 	/// [`HttpClient(404)`]: crate::SponsorBlockError::HttpClient
 	/// [`NoMatchingVideoHash`]: crate::SponsorBlockError::NoMatchingVideoHash
-	pub async fn fetch_segments(
+	pub async fn fetch_segments<V: AsRef<str>>(
 		&self,
-		video_id: &VideoIdSlice,
+		video_id: V,
 		accepted_categories: AcceptedCategories,
 		accepted_actions: AcceptedActions,
 	) -> Result<Vec<Segment>> {
-		self.fetch_segments_with_required::<&SegmentUuidSlice>(
+		self.fetch_segments_with_required::<V, &str>(
 			video_id,
 			accepted_categories,
 			accepted_actions,
@@ -170,9 +166,9 @@ impl Client {
 	/// function](Self::fetch_segments).
 	///
 	/// [`fetch_segments`]: Self::fetch_segments
-	pub async fn fetch_segments_with_required<S: AsRef<SegmentUuidSlice>>(
+	pub async fn fetch_segments_with_required<V: AsRef<str>, S: AsRef<str>>(
 		&self,
-		video_id: &VideoIdSlice,
+		video_id: V,
 		accepted_categories: AcceptedCategories,
 		accepted_actions: AcceptedActions,
 		required_segments: &[S],
@@ -193,7 +189,7 @@ impl Client {
 		{
 			let video_id_hash = {
 				let mut hasher = Sha256::new();
-				Digest::update(&mut hasher, video_id.as_bytes());
+				hasher.update(video_id.as_ref().as_bytes());
 				bytes_to_hex_string(&hasher.finalize()[..])
 			};
 			request = self.http.get(format!(
@@ -230,7 +226,7 @@ impl Client {
 			let mut found_match = false;
 			video_segments = Vec::new();
 			for hash_match in from_json_str::<Vec<RawHashMatch>>(response.as_str())?.drain(..) {
-				if hash_match.video_id == video_id {
+				if hash_match.video_id == video_id.as_ref() {
 					video_segments = hash_match.segments;
 					found_match = true;
 					break;
@@ -257,10 +253,7 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_segment_info<S: AsRef<SegmentUuidSlice>>(
-		&self,
-		segment_uuid: S,
-	) -> Result<Segment> {
+	pub async fn fetch_segment_info<S: AsRef<str>>(&self, segment_uuid: S) -> Result<Segment> {
 		Ok(self
 			.fetch_segment_info_multiple(&[segment_uuid])
 			.await?
@@ -278,7 +271,7 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_segment_info_multiple<S: AsRef<SegmentUuidSlice>>(
+	pub async fn fetch_segment_info_multiple<S: AsRef<str>>(
 		&self,
 		segment_uuids: &[S],
 	) -> Result<Vec<Segment>> {
