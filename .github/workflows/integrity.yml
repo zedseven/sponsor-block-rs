@@ -1,0 +1,69 @@
+name: Integrity
+
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rustfmt-check:
+    name: Rustfmt Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install `nightly` toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          components: rustfmt
+          override: true
+
+      - name: Rustfmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  clippy:
+    name: Clippy
+    strategy:
+      fail-fast: false
+      matrix:
+        features:
+          - [ default, 'user,private_searches' ]
+          - [ all, 'user,vip,private_searches,gen_user_id' ]
+          - [ gen_user_id, 'user,gen_user_id' ]
+          - [ user_and_vip, 'user,vip' ]
+          - [ vip, 'vip' ]
+          - [ none, '""' ]
+        os:
+          - windows-latest
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install `nightly` toolchain # So we can use newer lints
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          components: clippy
+          override: true
+
+      - name: Restore cache
+        uses: Swatinem/rust-cache@v1
+        with:
+          key: ${{ matrix.features[0] }}
+
+      - name: Cargo Clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --no-default-features --features ${{ matrix.features[1] }} -- -D warnings -A unused

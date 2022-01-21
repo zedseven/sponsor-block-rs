@@ -6,7 +6,8 @@ use std::result;
 use thiserror::Error;
 
 /// The library error type.
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum SponsorBlockError {
 	// HTTP-Related Error Types
 	/// An internal server error with the API.

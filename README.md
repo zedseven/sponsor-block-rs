@@ -1,5 +1,6 @@
 # sponsor-block
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
+[![Integrity Check](https://img.shields.io/github/workflow/status/zedseven/sponsor-block-rs/Integrity.svg?logo=githubactions&logoColor=white&label=integrity+check)](https://github.com/zedseven/sponsor-block-rs/actions/workflows/integrity.yml)
 [![# Issues](https://img.shields.io/github/issues/zedseven/sponsor-block-rs.svg?logo=github)](https://github.com/zedseven/sponsor-block-rs/issues)
 [![Crates.io](https://img.shields.io/crates/v/sponsor-block.svg?logo=rust)](https://crates.io/crates/sponsor-block)
 [![Crate Downloads](https://img.shields.io/crates/d/sponsor-block.svg?logo=azure-artifacts)](https://crates.io/crates/sponsor-block)
@@ -21,14 +22,14 @@ For library documentation, visit [docs.rs](https://docs.rs/sponsor-block).
 The following is a short example of how you might fetch the segments for a
 video:
 ```rust
-use sponsor_block::{AcceptedCategories, Client};
+use sponsor_block::{AcceptedActions, AcceptedCategories, Client};
 
 // This should be random, treated like a password, and stored across sessions
 const USER_ID: &str = "your local user id";
 
 let client = Client::new(USER_ID);
 let video_segments = client
-    .fetch_segments("7U-RbOKanYs", AcceptedCategories::all())
+    .fetch_segments("7U-RbOKanYs", AcceptedCategories::all(), AcceptedActions::all())
     .await
     .ok();
 

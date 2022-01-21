@@ -27,14 +27,14 @@
 //! video:
 //!
 //! ```rust,no_run
-//! use sponsor_block::{AcceptedCategories, Client};
+//! use sponsor_block::{AcceptedActions, AcceptedCategories, Client};
 //!
 //! // This should be random, treated like a password, and stored across sessions
 //! const USER_ID: &str = "your local user id";
 //!
 //! let client = Client::new(USER_ID);
 //! let video_segments = client
-//!     .fetch_segments("9Yhc6mmdJC4", AcceptedCategories::all())
+//!     .fetch_segments("9Yhc6mmdJC4", AcceptedCategories::all(), AcceptedActions::all())
 //!     .await
 //!     .ok();
 //!
@@ -45,13 +45,23 @@
 #![warn(
 	clippy::complexity,
 	clippy::correctness,
-	clippy::dbg_macro,
+	clippy::pedantic,
 	clippy::perf,
 	clippy::style,
 	clippy::suspicious,
-	clippy::pedantic,
+	clippy::clone_on_ref_ptr,
+	clippy::dbg_macro,
+	clippy::decimal_literal_representation,
+	clippy::exhaustive_enums,
+	clippy::exhaustive_structs,
 	clippy::filetype_is_file,
+	clippy::if_then_some_else_none,
+	clippy::non_ascii_literal,
+	clippy::self_named_module_files,
 	clippy::str_to_string,
+	clippy::undocumented_unsafe_blocks,
+	clippy::use_debug,
+	clippy::wildcard_enum_match_arm,
 	missing_docs,
 	rustdoc::missing_crate_level_docs
 )]
@@ -67,6 +77,11 @@
 	clippy::unnecessary_wraps,
 	dead_code,
 	unused_macros
+)]
+// Used with permission.
+#![doc(
+	html_logo_url = "https://sponsor.ajay.app/icons/icon-512x512.png",
+	html_favicon_url = "https://sponsor.ajay.app/favicon-32x32.png"
 )]
 
 // Modules

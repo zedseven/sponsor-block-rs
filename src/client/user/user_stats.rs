@@ -1,3 +1,5 @@
+//! The functions for retrieving user statistics.
+
 // Uses
 use std::{collections::HashMap, result::Result as StdResult};
 
@@ -5,46 +7,44 @@ use serde::{Deserialize, Deserializer};
 use serde_json::from_str as from_json_str;
 
 use crate::{
-	api::{convert_to_action_type, convert_to_segment_kind},
+	api::{convert_to_action_kind, convert_to_category},
 	error::Result,
 	util::{de::map_hashmap_key_from_str, get_response_text},
-	Action,
-	ActionableSegmentKind,
+	ActionKind,
+	Category,
 	Client,
-	LocalUserIdSlice,
-	PublicUserId,
-	PublicUserIdSlice,
 };
 
 /// The results of a user info request.
-#[derive(Deserialize, Debug, Default)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq)]
+#[non_exhaustive]
 #[serde(default, rename_all = "camelCase")]
 pub struct UserStats {
 	/// The user's public user ID.
 	#[serde(rename = "userID")]
-	pub user_id: PublicUserId,
+	pub user_id: String,
 	/// The user's username.
 	pub user_name: Option<String>,
 	/// The overall stats for the user.
 	pub overall_stats: OverallStats,
 	/// The categories with associated segment counts.
 	#[serde(deserialize_with = "map_category_kinds")]
-	pub category_count: HashMap<ActionableSegmentKind, u32>,
+	pub category_count: HashMap<Category, u32>,
 	/// The action types with associated segment counts.
 	#[serde(deserialize_with = "map_action_types")]
-	pub action_type_count: HashMap<Action, u32>,
+	pub action_type_count: HashMap<ActionKind, u32>,
 }
 
 fn map_category_kinds<'de, D: Deserializer<'de>, O: Deserialize<'de>>(
 	deserializer: D,
-) -> StdResult<HashMap<ActionableSegmentKind, O>, D::Error> {
-	map_hashmap_key_from_str(deserializer, convert_to_segment_kind)
+) -> StdResult<HashMap<Category, O>, D::Error> {
+	map_hashmap_key_from_str(deserializer, convert_to_category)
 }
 
 fn map_action_types<'de, D: Deserializer<'de>, O: Deserialize<'de>>(
 	deserializer: D,
-) -> StdResult<HashMap<Action, O>, D::Error> {
-	map_hashmap_key_from_str(deserializer, convert_to_action_type)
+) -> StdResult<HashMap<ActionKind, O>, D::Error> {
+	map_hashmap_key_from_str(deserializer, convert_to_action_kind)
 }
 
 /// The overall stats for a user, similar to what [`UserInfo`] provides.
@@ -52,7 +52,8 @@ fn map_action_types<'de, D: Deserializer<'de>, O: Deserialize<'de>>(
 /// TODO: Find a nice way to remove this. <https://github.com/serde-rs/serde/issues/2115>
 ///
 /// [`UserInfo`]: super::user_info::UserInfo
-#[derive(Deserialize, Debug, Default)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, PartialOrd)]
+#[non_exhaustive]
 #[serde(default, rename_all = "camelCase")]
 pub struct OverallStats {
 	/// The number of minutes this user has saved other users.
@@ -75,15 +76,15 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_user_stats_public(
-		&self,
-		public_user_id: &PublicUserIdSlice,
-	) -> Result<UserStats> {
+	pub async fn fetch_user_stats_public<S>(&self, public_user_id: S) -> Result<UserStats>
+	where
+		S: AsRef<str>,
+	{
 		// Build the request
 		let request = self
 			.http
 			.get(format!("{}{}", &self.base_url, API_ENDPOINT))
-			.query(&[("publicUserID", public_user_id)])
+			.query(&[("publicUserID", public_user_id.as_ref())])
 			.query(&[("fetchCategoryStats", true), ("fetchActionTypeStats", true)]);
 
 		// Send the request
@@ -112,15 +113,15 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_user_stats_local(
-		&self,
-		local_user_id: &LocalUserIdSlice,
-	) -> Result<UserStats> {
+	pub async fn fetch_user_stats_local<S>(&self, local_user_id: S) -> Result<UserStats>
+	where
+		S: AsRef<str>,
+	{
 		// Build the request
 		let request = self
 			.http
 			.get(format!("{}{}", &self.base_url, API_ENDPOINT))
-			.query(&[("userID", local_user_id)])
+			.query(&[("userID", local_user_id.as_ref())])
 			.query(&[("fetchCategoryStats", true), ("fetchActionTypeStats", true)]);
 
 		// Send the request

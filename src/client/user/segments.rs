@@ -1,3 +1,5 @@
+//! The functions for retrieving segments and segment info for videos.
+
 // Uses
 use serde::Deserialize;
 use serde_json::from_str as from_json_str;
@@ -7,46 +9,40 @@ use sha2::{Digest, Sha256};
 #[cfg(feature = "private_searches")]
 use crate::util::bytes_to_hex_string;
 use crate::{
-	api::convert_category_bitflags_to_url,
+	api::{convert_action_bitflags_to_url, convert_category_bitflags_to_url},
 	error::{Result, SponsorBlockError},
-	segment::{AcceptedCategories, ActionableSegmentKind, Segment},
+	segment::{AcceptedActions, AcceptedCategories, ActionKind, Category, Segment},
 	util::{
 		de::{bool_from_integer_str, none_on_0_0_from_str},
 		get_response_text,
 		to_url_array,
 	},
-	Action,
 	AdditionalSegmentInfo,
 	Client,
-	SegmentUuid,
-	SegmentUuidSlice,
-	VideoId,
-	VideoIdSlice,
 };
 
 // Function-Specific Deserialization Structs
 #[cfg(feature = "private_searches")]
-#[derive(Deserialize, Debug, Default)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(default)]
 struct RawHashMatch {
 	#[serde(rename = "videoID")]
-	video_id: VideoId,
+	video_id: String,
 	hash: String,
 	segments: Vec<RawSegment>,
 }
 
-#[derive(Deserialize, Debug, Default)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 struct RawSegment {
-	category: ActionableSegmentKind,
-	#[serde(rename = "actionType")]
-	action_type: Action,
+	category: Category,
+	action_type: ActionKind,
 	#[serde(rename = "segment")]
 	time_points: Option<[f32; 2]>,
 	start_time: Option<f32>,
 	end_time: Option<f32>,
 	#[serde(rename = "UUID")]
-	uuid: SegmentUuid,
+	uuid: String,
 	#[serde(deserialize_with = "bool_from_integer_str")]
 	locked: bool,
 	votes: i32,
@@ -64,6 +60,7 @@ impl RawSegment {
 	/// `RawSegment.additional_info`, since it is always populated by Serde but
 	/// not with useful values under certain circumstances.
 	fn convert_to_segment(self, additional_info: bool) -> Result<Segment> {
+		// Process the raw time information
 		let time_points = if let Some(points) = self.time_points {
 			points
 		} else {
@@ -101,18 +98,24 @@ impl RawSegment {
 			}
 		}
 
+		// For backwards-compatibility, the API returns `skip` as the action type for
+		// Highlight unless one of the requested action types is `poi`.
+		// This makes it so we always return the correct action type regardless.
+		// https://github.com/ajayyy/SponsorBlockServer/pull/448
+		let mut action_type = self.action_type;
+		if self.category == Category::Highlight {
+			action_type = ActionKind::PointOfInterest;
+		}
+
+		// Build the clean segment
 		Ok(Segment {
-			segment: self.category.to_actionable_segment(time_points),
-			action_type: self.action_type,
+			category: self.category,
+			action: action_type.to_action(time_points),
 			uuid: self.uuid,
 			locked: self.locked,
 			votes: self.votes,
 			video_duration_on_submission: self.video_duration_upon_submission,
-			additional_info: if additional_info {
-				Some(self.additional_info)
-			} else {
-				None
-			},
+			additional_info: additional_info.then(|| self.additional_info),
 		})
 	}
 }
@@ -135,13 +138,22 @@ impl Client {
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
 	/// [`HttpClient(404)`]: crate::SponsorBlockError::HttpClient
 	/// [`NoMatchingVideoHash`]: crate::SponsorBlockError::NoMatchingVideoHash
-	pub async fn fetch_segments(
+	pub async fn fetch_segments<V>(
 		&self,
-		video_id: &VideoIdSlice,
+		video_id: V,
 		accepted_categories: AcceptedCategories,
-	) -> Result<Vec<Segment>> {
-		self.fetch_segments_with_required::<&SegmentUuidSlice>(video_id, accepted_categories, &[])
-			.await
+		accepted_actions: AcceptedActions,
+	) -> Result<Vec<Segment>>
+	where
+		V: AsRef<str>,
+	{
+		self.fetch_segments_with_required::<V, &str>(
+			video_id,
+			accepted_categories,
+			accepted_actions,
+			&[],
+		)
+		.await
 	}
 
 	/// Fetches the segments for a given video ID.
@@ -157,12 +169,17 @@ impl Client {
 	/// function](Self::fetch_segments).
 	///
 	/// [`fetch_segments`]: Self::fetch_segments
-	pub async fn fetch_segments_with_required<S: AsRef<SegmentUuidSlice>>(
+	pub async fn fetch_segments_with_required<V, S>(
 		&self,
-		video_id: &VideoIdSlice,
+		video_id: V,
 		accepted_categories: AcceptedCategories,
+		accepted_actions: AcceptedActions,
 		required_segments: &[S],
-	) -> Result<Vec<Segment>> {
+	) -> Result<Vec<Segment>>
+	where
+		V: AsRef<str>,
+		S: AsRef<str>,
+	{
 		// Function Constants
 		const API_ENDPOINT: &str = "/skipSegments";
 
@@ -173,13 +190,13 @@ impl Client {
 			request = self
 				.http
 				.get(format!("{}{}", &self.base_url, API_ENDPOINT))
-				.query(&[("videoID", video_id)]);
+				.query(&[("videoID", video_id.as_ref())]);
 		}
 		#[cfg(feature = "private_searches")]
 		{
 			let video_id_hash = {
 				let mut hasher = Sha256::new();
-				Digest::update(&mut hasher, video_id.as_bytes());
+				hasher.update(video_id.as_ref().as_bytes());
 				bytes_to_hex_string(&hasher.finalize()[..])
 			};
 			request = self.http.get(format!(
@@ -194,6 +211,10 @@ impl Client {
 			.query(&[(
 				"categories",
 				convert_category_bitflags_to_url(accepted_categories),
+			)])
+			.query(&[(
+				"actionTypes",
+				convert_action_bitflags_to_url(accepted_actions),
 			)])
 			.query(&[("service", &self.service)]);
 		if !required_segments.is_empty() {
@@ -212,7 +233,7 @@ impl Client {
 			let mut found_match = false;
 			video_segments = Vec::new();
 			for hash_match in from_json_str::<Vec<RawHashMatch>>(response.as_str())?.drain(..) {
-				if hash_match.video_id == video_id {
+				if hash_match.video_id == video_id.as_ref() {
 					video_segments = hash_match.segments;
 					found_match = true;
 					break;
@@ -239,10 +260,10 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_segment_info<S: AsRef<SegmentUuidSlice>>(
-		&self,
-		segment_uuid: S,
-	) -> Result<Segment> {
+	pub async fn fetch_segment_info<S>(&self, segment_uuid: S) -> Result<Segment>
+	where
+		S: AsRef<str>,
+	{
 		Ok(self
 			.fetch_segment_info_multiple(&[segment_uuid])
 			.await?
@@ -260,10 +281,10 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_segment_info_multiple<S: AsRef<SegmentUuidSlice>>(
-		&self,
-		segment_uuids: &[S],
-	) -> Result<Vec<Segment>> {
+	pub async fn fetch_segment_info_multiple<S>(&self, segment_uuids: &[S]) -> Result<Vec<Segment>>
+	where
+		S: AsRef<str>,
+	{
 		// Function Constants
 		const API_ENDPOINT: &str = "/segmentInfo";
 

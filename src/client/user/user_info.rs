@@ -1,24 +1,19 @@
+//! The functions for retrieving info about users.
+
 // Uses
 use serde::Deserialize;
 use serde_json::from_str as from_json_str;
 
-use crate::{
-	error::Result,
-	util::get_response_text,
-	Client,
-	LocalUserIdSlice,
-	PublicUserId,
-	PublicUserIdSlice,
-	SegmentUuid,
-};
+use crate::{error::Result, util::get_response_text, Client};
 
 /// The results of a user info request.
-#[derive(Deserialize, Debug, Default)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, PartialOrd)]
+#[non_exhaustive]
 #[serde(default, rename_all = "camelCase")]
 pub struct UserInfo {
 	/// The user's public user ID.
 	#[serde(rename = "userID")]
-	pub public_user_id: PublicUserId,
+	pub public_user_id: String,
 	/// The user's username.
 	pub user_name: Option<String>,
 	/// The number of minutes this user has saved other users.
@@ -42,7 +37,7 @@ pub struct UserInfo {
 	pub vip: bool,
 	/// the UUID of the last submitted segment.
 	#[serde(rename = "lastSegmentID")]
-	pub last_segment_id: Option<SegmentUuid>,
+	pub last_segment_id: Option<String>,
 }
 
 impl UserInfo {
@@ -74,15 +69,15 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_user_info_public(
-		&self,
-		public_user_id: &PublicUserIdSlice,
-	) -> Result<UserInfo> {
+	pub async fn fetch_user_info_public<U>(&self, public_user_id: U) -> Result<UserInfo>
+	where
+		U: AsRef<str>,
+	{
 		// Build the request
 		let request = self
 			.http
 			.get(format!("{}{}", &self.base_url, API_ENDPOINT))
-			.query(&[("publicUserID", public_user_id)]);
+			.query(&[("publicUserID", public_user_id.as_ref())]);
 
 		// Send the request
 		let response = get_response_text(request.send().await?).await?;
@@ -110,15 +105,15 @@ impl Client {
 	/// encountered.
 	///
 	/// [`SponsorBlockError`]: crate::SponsorBlockError
-	pub async fn fetch_user_info_local(
-		&self,
-		local_user_id: &LocalUserIdSlice,
-	) -> Result<UserInfo> {
+	pub async fn fetch_user_info_local<U>(&self, local_user_id: U) -> Result<UserInfo>
+	where
+		U: AsRef<str>,
+	{
 		// Build the request
 		let request = self
 			.http
 			.get(format!("{}{}", &self.base_url, API_ENDPOINT))
-			.query(&[("userID", local_user_id)]);
+			.query(&[("userID", local_user_id.as_ref())]);
 
 		// Send the request
 		let response = get_response_text(request.send().await?).await?;
